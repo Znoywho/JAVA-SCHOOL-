@@ -2,7 +2,7 @@ package com.bikemarket.entity;
 
 import com.bikemarket.enums.Role;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
@@ -11,7 +11,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "users")
-@Inheritance(strategy = InheritanceType.JOINED)
+// @Inheritance(strategy = InheritanceType.JOINED)
 public class User {
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
