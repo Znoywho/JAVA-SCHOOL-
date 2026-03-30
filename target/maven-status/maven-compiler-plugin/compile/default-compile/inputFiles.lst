@@ -1,3 +1,4 @@
+/mnt/datassd/CodeHub/REBIKE/src/main/java/com/bikemarket/RebikeApplication.java
 /mnt/datassd/CodeHub/REBIKE/src/main/java/com/bikemarket/entity/Admin.java
 /mnt/datassd/CodeHub/REBIKE/src/main/java/com/bikemarket/entity/Buyer.java
 /mnt/datassd/CodeHub/REBIKE/src/main/java/com/bikemarket/entity/Inspector.java
@@ -5,4 +6,5 @@
 /mnt/datassd/CodeHub/REBIKE/src/main/java/com/bikemarket/entity/Seller.java
 /mnt/datassd/CodeHub/REBIKE/src/main/java/com/bikemarket/entity/User.java
 /mnt/datassd/CodeHub/REBIKE/src/main/java/com/bikemarket/enums/Role.java
-/mnt/datassd/CodeHub/REBIKE/src/main/java/com/bikemarket/main/RebikeApplication.java
+/mnt/datassd/CodeHub/REBIKE/src/main/java/com/bikemarket/repository/UserRepository.java
+/mnt/datassd/CodeHub/REBIKE/src/main/java/com/bikemarket/service/UserService.java

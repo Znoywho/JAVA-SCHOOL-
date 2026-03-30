@@ -14,8 +14,8 @@
   <groupId>com.example</groupId>
   <artifactId>demo-postgresql</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <name>demo-postgresql</name>
-  <description>Spring Boot with JPA and PostgreSQL</description>
+  <name>Rebike</name>
+  <description>Sell the used bike</description>
 
   <properties>
     <java.version>17</java.version>

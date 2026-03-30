@@ -1,0 +1,9 @@
+com/bikemarket/entity/Seller.class
+com/bikemarket/enums/Role.class
+com/bikemarket/RebikeApplication.class
+com/bikemarket/entity/Admin.class
+com/bikemarket/entity/Buyer.class
+com/bikemarket/service/UserService.class
+com/bikemarket/entity/Inspector.class
+com/bikemarket/repository/UserRepository.class
+com/bikemarket/entity/User.class

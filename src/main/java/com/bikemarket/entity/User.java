@@ -10,16 +10,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "users")
-// @Inheritance(strategy = InheritanceType.JOINED)
+@Table(name = "USER")
 public class User {
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
   @Column(name = "Id")
   private long Id;
 
-  @Column(name = "full_name", nullable = false, length = 100)
-  private String fullName;
+  @Column(name = "name", nullable = false, length = 100)
+  private String name;
 
   @Column(unique = true, nullable = false, length = 100)
   private String email;
@@ -48,5 +47,37 @@ public class User {
   @CreationTimestamp
   @Column(name = "created_at", updatable = false)
   private LocalDateTime createdAt;
+
+  public User() {
+  }
+
+  public User(String name, String email, String phone, String password, Role role) {
+    this.name = name;
+    this.email = email;
+    this.phone = phone;
+    this.password = password;
+    this.role = role;
+    this.createdAt = LocalDateTime.now();
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public String getEmail() {
+    return email;
+  }
+
+  public String getPhone() {
+    return phone;
+  }
+
+  public String getPassword() {
+    return password;
+  }
+
+  public Role getRole() {
+    return role;
+  }
 
 }

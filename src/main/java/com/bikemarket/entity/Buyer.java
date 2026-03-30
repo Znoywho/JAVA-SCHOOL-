@@ -10,8 +10,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 // NOTE: Buyer inherits from User by joining the `TABLE`
-// @Entity
-@Table(name = "buyers")
 public class Buyer extends User {
+  public Buyer(String name, String email, String phone, String password) {
+    super(name, email, phone, password, Role.BUYER);
+  }
 
 }
