@@ -9,6 +9,7 @@ import com.bikemarket.enums.ProductStatus;
 import jakarta.persistence.*;
 
 @Entity
+@Inheritance(strategy = InheritanceType.JOINED)
 @Table(name = "PRODUCT")
 public class Product {
   @Id
@@ -29,7 +30,7 @@ public class Product {
   @ManyToOne
   @JoinColumn(name = "Brand", foreignKey = @ForeignKey(name = "Id"))
   private int Brand;
-
+  // NOTE: Add category in product
   @Column(name = "ConditionPercent")
   private double ConditionPercent;
 
