@@ -1,0 +1,24 @@
+package com.bikemarket.entity;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import jakarta.persistence.GenerationType;
+import org.hibernate.annotations.CreationTimestamp;
+
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "Category")
+public class Category {
+  @Id
+  @GeneratedValue(strategy = GenerationType.AUTO)
+  @Column(name = "Id")
+  private long Id;
+
+  @Column(name = "name")
+  private String name;
+
+  @OneToMany(mappedBy = "category")
+  private List<Product> products;
+
+}

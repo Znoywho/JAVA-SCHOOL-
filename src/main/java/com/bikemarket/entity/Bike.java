@@ -12,18 +12,15 @@ import jakarta.persistence.*;
 @Table(name = "Bikes")
 @PrimaryKeyJoinColumn(name = "Id")
 public class Bike extends Product {
-  public Bike(int Total, long SellerId, String Title, int Brand, double ConditionPercent) {
-    super(Total, SellerId, Title, Brand, ConditionPercent);
-  }
 
   @Column(name = "FrameSize")
   private String FrameSize;
 
   @Column(name = "WheelSize")
-  private String Wheelsize;
+  private String WheelSize;
 
   @Column(name = "isVerified")
-  private String isVerified;
+  private Boolean isVerified;
 
   @Column(name = "MinRiderHeight")
   private int MinRiderHeight;
@@ -38,5 +35,21 @@ public class Bike extends Product {
 
   @Column(name = "Color")
   private String Color;
+
+  public Bike(int Total, long SellerId, String Title, int Brand, double ConditionPercent,
+      String FrameSize, String WheelSize, boolean isVerified,
+      int MinRiderHeight, int MaxRiderHeight, double maxWeightCapacityKg, double weightKg, String Color) {
+
+    super(Total, SellerId, Title, Brand, ConditionPercent);
+
+    this.FrameSize = FrameSize;
+    this.WheelSize = WheelSize;
+    this.isVerified = isVerified;
+    this.MinRiderHeight = MinRiderHeight;
+    this.MaxRiderHeight = MaxRiderHeight;
+    this.maxWeightCapacityKg = maxWeightCapacityKg;
+    this.weightKg = weightKg;
+    this.Color = Color;
+  }
 
 }
