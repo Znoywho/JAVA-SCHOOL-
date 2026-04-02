@@ -1,5 +1,7 @@
 package com.bikemarket.entity;
 
+import com.bikemarket.enums.*;
+
 import com.bikemarket.enums.Role;
 
 import jakarta.persistence.*;
@@ -9,44 +11,41 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-
 @Entity
 @Table(name = "Orders")
 public class Order {
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
   @Column(name = "Id")
-  private long Id; 
+  private long Id;
 
-    @ManyToOne(fetch = FetchType.LAZY) 
-    @JoinColumn(name = "BuyerId", nullable = false, foreignKey = @ForeignKey(name = "BuyerId"))
-    private Buyer buyer;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "BuyerId", nullable = false, foreignKey = @ForeignKey(name = "BuyerId"))
+  private Buyer buyer;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "SellerId", nullable = false, foreignKey = @ForeignKey(name = "SellerId"))
-    private Seller seller;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "SellerId", nullable = false, foreignKey = @ForeignKey(name = "SellerId"))
+  private Seller seller;
 
-    @Column(name = "total_price", nullable = false)
-    private double totalPrice;
+  @Column(name = "total_price", nullable = false)
+  private double totalPrice;
 
-    private LocalDateTime created_at;
-    @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
+  @CreationTimestamp
+  @Column(name = "created_at", updatable = false)
+  private LocalDateTime created_at;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
-    private OrderStatus status;
+  @Enumerated(EnumType.STRING)
+  @Column(name = "status", nullable = false)
+  private OrderStatus status;
 
+  Order(Buyer buyer, Seller seller, double totalPrice) {
+    this.buyer = buyer;
+    this.seller = seller;
+    this.totalPrice = totalPrice;
+    this.created_at = LocalDateTime.now();
+    this.status = OrderStatus.PENDING;
+  }
 
-    Order(Buyer buyer, Seller seller, double totalPrice) {
-        this.buyer = buyer;
-        this.seller = seller;
-        this.totalPrice = totalPrice;
-        this.created_at = LocalDateTime.now();
-        this.status = OrderStatus.PENDING;
-    }
-
-    // TODO: add payment method
-
+  // TODO: add payment method
 
 }

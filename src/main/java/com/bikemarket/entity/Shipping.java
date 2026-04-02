@@ -1,8 +1,7 @@
-package com.bikemarket.enums;
 
 package com.bikemarket.entity;
 
-import com.bikemarket.enums.Role;
+import com.bikemarket.enums.ShippingStatus;
 
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -23,15 +22,13 @@ public class Shipping {
   @JoinColumn(name = "OrderId", nullable = false, foreignKey = @ForeignKey(name = "OrderId"))
   private Order order;
 
-
-    @Column(name = "provider", nullable = false)
+  @Column(name = "provider", nullable = false)
   private String provider;
 
   @Column(name = "tracking_code", nullable = false, unique = true)
   private String trackingCode;
 
-
-  @enumerated(EnumType.STRING)
+  @Enumerated(EnumType.STRING)
   @Column(name = "status", nullable = false)
   private ShippingStatus status;
 

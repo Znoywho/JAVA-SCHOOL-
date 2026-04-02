@@ -1,6 +1,6 @@
 package com.bikemarket.enums;
 
-public enum OrderStatus {
+public enum ShippingStatus {
   PENDING,
   SHIPPED,
   DELIVERED,

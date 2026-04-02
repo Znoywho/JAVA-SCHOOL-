@@ -1,4 +1,3 @@
-package com.bikemarket.enums;
 
 package com.bikemarket.entity;
 
@@ -19,12 +18,15 @@ public class Conversation {
   @Column(name = "Id")
   private long Id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "UserId", nullable = false, foreignKey = @ForeignKey(name = "UserId"))
-    private User user;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "UserId1", nullable = false, foreignKey = @ForeignKey(name = "UserId1"))
+  private User user;
 
-    conversation(User user) {
-        this.user = user;
-    }
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "UserId2", nullable = false, foreignKey = @ForeignKey(name = "UserId2"))
+  private User user2;
+
+  public Conversation(User user) {
+    this.user = user;
+  }
 }
-

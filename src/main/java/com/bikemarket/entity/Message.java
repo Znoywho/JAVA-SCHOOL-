@@ -1,4 +1,3 @@
-package com.bikemarket.enums;
 
 package com.bikemarket.entity;
 
@@ -19,9 +18,9 @@ class Message {
   @Column(name = "Id")
   private long Id;
 
-@ManyToOne(fetch = FetchType.LAZY)
-@JoinColumn(name = "ConversationId", nullable = false, foreignKey = @ForeignKey(name = "ConversationId"))
-private Conversation conversation;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "ConversationId", nullable = false, foreignKey = @ForeignKey(name = "ConversationId"))
+  private Conversation conversation;
 
   @Column(name = "content", nullable = false)
   private String content;
