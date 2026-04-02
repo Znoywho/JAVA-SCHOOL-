@@ -57,7 +57,7 @@ public class User {
     this.phone = phone;
     this.password = password;
     this.role = role;
-    this.createdAt = LocalDateTime.now();
+    this.created_at = LocalDateTime.now();
   }
 
   public String getName() {
