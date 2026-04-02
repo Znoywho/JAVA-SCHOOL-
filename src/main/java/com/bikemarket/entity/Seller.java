@@ -11,7 +11,11 @@ import java.util.List;
 
 // NOTE: Buyer inherits from User by joining the `TABLE`
 public class Seller extends User {
+  @OneToMany(mappedBy = "seller")
+  private List<Product> products;
+
   public Seller(String name, String email, String phone, String password) {
     super(name, email, phone, password, Role.SELLER);
+    this.products = null;
   }
 }

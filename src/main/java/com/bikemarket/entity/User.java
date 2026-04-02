@@ -46,7 +46,7 @@ public class User {
   // private boolean isActive = true;
   @CreationTimestamp
   @Column(name = "created_at", updatable = false)
-  private LocalDateTime createdAt;
+  private LocalDateTime created_at;
 
   public User() {
   }
