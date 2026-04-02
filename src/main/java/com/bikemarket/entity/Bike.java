@@ -36,11 +36,11 @@ public class Bike extends Product {
   @Column(name = "Color")
   private String Color;
 
-  public Bike(int Total, long SellerId, String Title, int Brand, double ConditionPercent,
+  public Bike(int Total, Seller SellerId, String Title, Brand Brand, Category category, double ConditionPercent,
       String FrameSize, String WheelSize, boolean isVerified,
       int MinRiderHeight, int MaxRiderHeight, double maxWeightCapacityKg, double weightKg, String Color) {
 
-    super(Total, SellerId, Title, Brand, ConditionPercent);
+    super(Total, SellerId, Title, Brand, category, ConditionPercent);
 
     this.FrameSize = FrameSize;
     this.WheelSize = WheelSize;

@@ -20,17 +20,23 @@ public class Product {
   @Column(name = "Total")
   private int Total;
 
-  @ManyToOne
-  @JoinColumn(name = "SellerId", foreignKey = @ForeignKey(name = "Id"))
-  private long SellerId;
+  // NOTE: `@ForeignKey` just helps you name the constraint of the FK
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "SellerId", nullable = false, foreignKey = @ForeignKey(name = "SellerId"))
+  private Seller SellerId;
 
   @Column(name = "Title", columnDefinition = "TEXT")
   private String Title;
 
   @ManyToOne
-  @JoinColumn(name = "Brand", foreignKey = @ForeignKey(name = "Id"))
-  private int Brand;
-  // NOTE: Add category in product
+  @JoinColumn(name = "BrandId", nullable = false, foreignKey = @ForeignKey(name = "BrandId"))
+  private Brand brand;
+
+  // TODO: Add category in product
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "category_id")
+  private Category category;
+
   @Column(name = "ConditionPercent")
   private double ConditionPercent;
 
@@ -46,11 +52,12 @@ public class Product {
   @Column(name = "updated_at")
   private LocalDateTime updated_at;
 
-  public Product(int Total, long SellerId, String Title, int Brand, double ConditionPercent) {
+  public Product(int Total, Seller SellerId, String Title, Brand brand, Category category, double ConditionPercent) {
     this.Total = Total;
     this.SellerId = SellerId;
     this.Title = Title;
-    this.Brand = Brand;
+    this.category = category;
+    this.brand = brand;
     this.ConditionPercent = ConditionPercent;
     this.created_at = LocalDateTime.now();
     this.updated_at = LocalDateTime.now();

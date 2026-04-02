@@ -1,5 +1,6 @@
 package com.bikemarket.entity;
 
+import java.util.List;
 import java.time.LocalDateTime;
 import jakarta.persistence.GenerationType;
 import org.hibernate.annotations.CreationTimestamp;
@@ -18,5 +19,8 @@ public class Brand {
 
   @Column(name = "name")
   private String name;
+
+  @OneToMany(mappedBy = "brand")
+  private List<Product> products;
 
 }
