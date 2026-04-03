@@ -19,10 +19,10 @@ public class InspectorReport {
 
   @ManyToOne
   @JoinColumn(name = "BikeId", foreignKey = @ForeignKey(name = "Id"))
-  private long BikeId;
+  private Bike BikeId;
 
   @ManyToOne
   @JoinColumn(name = "InspectorId", nullable = false)
-  private long InspectorId;
+  private User InspectorId;
 
 }

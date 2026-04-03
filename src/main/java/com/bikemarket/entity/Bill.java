@@ -24,11 +24,11 @@ public class Bill {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "BuyerId", nullable = false, foreignKey = @ForeignKey(name = "BuyerId"))
-  private Buyer buyer;
+  private User buyer;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "SellerId", nullable = false, foreignKey = @ForeignKey(name = "SellerId"))
-  private Seller seller;
+  private User seller;
 
   @Column(name = "price", nullable = false)
   private double price;
@@ -41,7 +41,7 @@ public class Bill {
   @Column(name = "status", nullable = false)
   private BillStatus status;
 
-  Bill(Order order, Buyer buyer, Seller seller, double price) {
+  Bill(Order order, User buyer, User seller, double price) {
     this.order = order;
     this.buyer = buyer;
     this.seller = seller;

@@ -21,4 +21,17 @@ public class Category {
   @OneToMany(mappedBy = "category")
   private List<Product> products;
 
+  public Category(String name) {
+    this.name = name;
+    this.products = null;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public List<Product> getProducts() {
+    return products;
+  }
+
 }

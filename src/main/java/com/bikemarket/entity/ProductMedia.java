@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "Product Media")
+@Table(name = "PRODUCT_MEDIA")
 
 public class ProductMedia {
   @Id
@@ -19,8 +19,8 @@ public class ProductMedia {
   private long Id;
 
   @ManyToOne
-  @JoinColumn(name = "ProeductId", foreignKey = @ForeignKey(name = "Id"))
-  private int ProductId;
+  @JoinColumn(name = "ProductId", foreignKey = @ForeignKey(name = "Id"))
+  private Product ProductId;
 
   @Column(name = "media_url")
   private String media_url;
@@ -31,8 +31,8 @@ public class ProductMedia {
   @Column(name = "isThumbnail")
   private String isThumbnail;
 
-ProductMedia(int productId, String media_url, String media_type, String isThumbnail) {
-    this.ProductId = productId;
+ProductMedia(Product product, String media_url, String media_type, String isThumbnail) {
+    this.ProductId = product;
     this.media_url = media_url;
     this.media_type = media_type;
     this.isThumbnail = isThumbnail;

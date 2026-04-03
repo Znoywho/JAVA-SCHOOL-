@@ -19,7 +19,7 @@ public class Cart {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "BuyerId", nullable = false, foreignKey = @ForeignKey(name = "BuyerId"))
-  private Buyer buyer;
+  private User buyer;
 
   @CreationTimestamp
   @Column(name = "created_at", updatable = false)
@@ -29,7 +29,7 @@ public class Cart {
   @Column(name = "updated_at", updatable = false)
   private LocalDateTime updated_at;
 
-  Cart(Buyer buyer) {
+  Cart(User buyer) {
     this.buyer = buyer;
     this.created_at = LocalDateTime.now();
     this.updated_at = LocalDateTime.now();

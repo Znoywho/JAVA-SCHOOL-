@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "USER")
+@Table(name = "users")
 public class User {
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
@@ -78,6 +78,35 @@ public class User {
 
   public Role getRole() {
     return role;
+  }
+
+  public LocalDateTime getCreated_at() {
+    return created_at;
+  }
+
+  public long getId() {
+    return Id;
+  }
+
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public void setEmail(String email) {
+    this.email = email;
+  }
+
+  public void setPhone(String phone) {
+    this.phone = phone;
+  }
+
+
+  public void setPassword(String password) {
+    this.password = password;
+  }
+
+  public void setRole(Role role) {
+    this.role = role;
   }
 
 }

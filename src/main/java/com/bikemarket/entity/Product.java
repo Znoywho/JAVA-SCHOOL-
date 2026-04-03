@@ -23,7 +23,7 @@ public class Product {
   // NOTE: `@ForeignKey` just helps you name the constraint of the FK
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "SellerId", nullable = false, foreignKey = @ForeignKey(name = "SellerId"))
-  private Seller SellerId;
+  private User SellerId;
 
   @Column(name = "Title", columnDefinition = "TEXT")
   private String Title;
@@ -52,7 +52,7 @@ public class Product {
   @Column(name = "updated_at")
   private LocalDateTime updated_at;
 
-  public Product(int Total, Seller SellerId, String Title, Brand brand, Category category, double ConditionPercent) {
+  public Product(int Total, User SellerId, String Title, Brand brand, Category category, double ConditionPercent) {
     this.Total = Total;
     this.SellerId = SellerId;
     this.Title = Title;

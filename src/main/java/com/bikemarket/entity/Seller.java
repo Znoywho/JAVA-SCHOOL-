@@ -9,13 +9,13 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-// NOTE: Buyer inherits from User by joining the `TABLE`
+// NOTE: Seller is a helper object, not a JPA entity
 public class Seller extends User {
-  @OneToMany(mappedBy = "seller")
-  private List<Product> products;
+
+  public Seller() { super(); }
 
   public Seller(String name, String email, String phone, String password) {
     super(name, email, phone, password, Role.SELLER);
-    this.products = null;
   }
+
 }

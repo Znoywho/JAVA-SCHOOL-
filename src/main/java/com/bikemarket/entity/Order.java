@@ -21,11 +21,11 @@ public class Order {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "BuyerId", nullable = false, foreignKey = @ForeignKey(name = "BuyerId"))
-  private Buyer buyer;
+  private User buyer;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "SellerId", nullable = false, foreignKey = @ForeignKey(name = "SellerId"))
-  private Seller seller;
+  private User seller;
 
   @Column(name = "total_price", nullable = false)
   private double totalPrice;
@@ -38,7 +38,7 @@ public class Order {
   @Column(name = "status", nullable = false)
   private OrderStatus status;
 
-  Order(Buyer buyer, Seller seller, double totalPrice) {
+  Order(User buyer, User seller, double totalPrice) {
     this.buyer = buyer;
     this.seller = seller;
     this.totalPrice = totalPrice;

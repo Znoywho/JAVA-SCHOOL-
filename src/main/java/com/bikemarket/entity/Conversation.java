@@ -26,7 +26,12 @@ public class Conversation {
   @JoinColumn(name = "UserId2", nullable = false, foreignKey = @ForeignKey(name = "UserId2"))
   private User user2;
 
-  public Conversation(User user) {
-    this.user = user;
+    @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Message> messages;
+
+  public Conversation(User user1, User user2) {
+    this.user = user1;
+    this.user2 = user2;
+    this.messages = new ArrayList<>();
   }
 }

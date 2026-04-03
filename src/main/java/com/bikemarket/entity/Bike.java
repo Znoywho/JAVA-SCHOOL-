@@ -36,7 +36,7 @@ public class Bike extends Product {
   @Column(name = "Color")
   private String Color;
 
-  public Bike(int Total, Seller SellerId, String Title, Brand Brand, Category category, double ConditionPercent,
+  public Bike(int Total, User SellerId, String Title, Brand Brand, Category category, double ConditionPercent,
       String FrameSize, String WheelSize, boolean isVerified,
       int MinRiderHeight, int MaxRiderHeight, double maxWeightCapacityKg, double weightKg, String Color) {
 
