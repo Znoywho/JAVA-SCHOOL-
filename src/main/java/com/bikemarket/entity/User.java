@@ -100,7 +100,6 @@ public class User {
     this.phone = phone;
   }
 
-
   public void setPassword(String password) {
     this.password = password;
   }

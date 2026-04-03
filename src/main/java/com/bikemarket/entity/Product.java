@@ -63,4 +63,70 @@ public class Product {
     this.updated_at = LocalDateTime.now();
 
   }
+
+  public long getId() {
+    return Id;
+  }
+
+  public int getTotal() {
+    return Total;
+  }
+
+  public User getSellerId() {
+    return SellerId;
+  }
+
+  public String getTitle() {
+    return Title;
+  }
+
+  public Brand getBrand() {
+    return brand;
+  }
+
+  public Category getCategory() {
+    return category;
+  }
+
+  public double getConditionPercent() {
+    return ConditionPercent;
+  }
+
+  public ProductStatus getStatus() {
+    return Status;
+  }
+
+
+  public LocalDateTime getCreated_at() {
+    return created_at;
+  }
+
+  public void setTitle(String title) {
+    Title = title;
+  }
+
+  public void setStatus(ProductStatus status) {
+    Status = status;
+  }
+
+  public void setTotal(int total) {
+    Total = total;
+  }
+
+
+  public void setSellerId(User sellerId) {
+    SellerId = sellerId;
+  }
+
+  public void setBrand(Brand brand) {
+    this.brand = brand;
+  }
+
+  public void setCategory(Category category) {
+    this.category = category;
+  }
+
+  public void setConditionPercent(double conditionPercent) {
+    ConditionPercent = conditionPercent;
+  }
 }

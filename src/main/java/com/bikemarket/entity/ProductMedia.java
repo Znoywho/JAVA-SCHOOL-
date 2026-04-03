@@ -31,7 +31,7 @@ public class ProductMedia {
   @Column(name = "isThumbnail")
   private String isThumbnail;
 
-ProductMedia(Product product, String media_url, String media_type, String isThumbnail) {
+  ProductMedia(Product product, String media_url, String media_type, String isThumbnail) {
     this.ProductId = product;
     this.media_url = media_url;
     this.media_type = media_type;
