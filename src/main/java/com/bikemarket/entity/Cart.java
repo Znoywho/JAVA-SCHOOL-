@@ -32,4 +32,25 @@ public class Cart {
     this.created_at = LocalDateTime.now();
     this.updated_at = LocalDateTime.now();
   }
+
+
+  public long getId() {
+    return this.Id;
+  }
+
+  public User getBuyer() {
+    return this.buyer;
+  }
+
+  public LocalDateTime getCreatedAt() {
+    return this.created_at;
+  }
+
+  public LocalDateTime getUpdatedAt() {
+    return this.updated_at;
+  }
+
+  public void setUpdatedAt() {
+    this.updated_at = LocalDateTime.now();
+  }
 }

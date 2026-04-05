@@ -4,14 +4,11 @@ import java.util.List;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
-// import org.hibernate.Transaction;
+
 import org.hibernate.cfg.Configuration;
 
 import com.bikemarket.entity.User;
-// import com.bikemarket.entity.Buyer;
-// import com.bikemarket.entity.Seller;
-// import com.bikemarket.entity.Inspector;
-// import com.bikemarket.entity.Admin;
+
 
 public class UserDAO {
   private SessionFactory sessionFactory = null;
@@ -25,10 +22,27 @@ public class UserDAO {
 
   }
 
+  public User getUserByEmail(String email) {
+    Session session = sessionFactory.openSession();
+    try {
+      return session.createQuery("FROM User WHERE email = :email", User.class)
+          .setParameter("email", email)
+          .uniqueResult();
+    } catch (Exception e) {
+      System.out.println("Error occurred while fetching user by email: " + e.getMessage());
+      return null;
+    } finally {
+      session.close();
+    }
+  }
+
+
+
   public void saveUser(User user) {
     Session session = this.sessionFactory.openSession();
-    Transaction transaction = session.beginTransaction();
+    Transaction transaction = null;
     try {
+      transaction = session.beginTransaction();
       session.save(user);
       transaction.commit();
       System.out.println("Saved user role: " + user.getRole() + " (" + user.getEmail() + ")");

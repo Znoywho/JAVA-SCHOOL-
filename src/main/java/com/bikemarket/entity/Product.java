@@ -28,6 +28,9 @@ public class Product {
   @Column(name = "Title", columnDefinition = "TEXT")
   private String Title;
 
+  @Column(name = "Price", precision = 10, scale = 2)
+  private double Price;
+
   @ManyToOne
   @JoinColumn(name = "BrandId", nullable = false, foreignKey = @ForeignKey(name = "BrandId"))
   private Brand brand;
@@ -55,13 +58,14 @@ public class Product {
   @OneToOne(mappedBy = "product")
   private InspectorReport inspectorReport;
 
-  public Product(int Total, User SellerId, String Title, Brand brand, Category category, double ConditionPercent) {
+  public Product(int Total, User SellerId, String Title, Brand brand, Category category, double ConditionPercent, double Price) {
     this.Total = Total;
     this.SellerId = SellerId;
     this.Title = Title;
     this.category = category;
     this.brand = brand;
     this.ConditionPercent = ConditionPercent;
+    this.Price = Price;
     this.created_at = LocalDateTime.now();
     this.updated_at = LocalDateTime.now();
     this.Status = ProductStatus.DRAFT;
@@ -96,6 +100,10 @@ public class Product {
     return ConditionPercent;
   }
 
+  public double getPrice() {
+    return Price;
+  }
+
   public ProductStatus getStatus() {
     return Status;
   }
@@ -110,6 +118,10 @@ public class Product {
 
   public void setStatus(ProductStatus status) {
     Status = status;
+  }
+
+  public void setPrice(double price) {
+    Price = price;
   }
 
   public void setTotal(int total) {
