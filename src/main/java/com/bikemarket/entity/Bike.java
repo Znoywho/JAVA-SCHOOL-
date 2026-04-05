@@ -1,11 +1,5 @@
 package com.bikemarket.entity;
 
-import java.time.LocalDateTime;
-
-import org.hibernate.annotations.CreationTimestamp;
-
-import com.bikemarket.enums.ProductStatus;
-
 import jakarta.persistence.*;
 
 @Entity

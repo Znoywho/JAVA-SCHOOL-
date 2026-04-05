@@ -2,14 +2,13 @@ package com.bikemarket.entity;
 
 import com.bikemarket.enums.*;
 
-import com.bikemarket.enums.Role;
+
 
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+
 
 @Entity
 @Table(name = "Orders")
@@ -48,4 +47,27 @@ public class Order {
 
   // TODO: add payment method
 
+  public long getId() {
+    return this.Id;
+  }
+
+  public User getBuyer() {
+    return this.buyer;
+  }
+
+  public User getSeller() {
+    return this.seller;
+  }
+
+  public double getTotalPrice() {
+    return this.totalPrice;
+  }
+
+  public LocalDateTime getCreated_at() {
+    return this.created_at;
+  }
+
+  public OrderStatus getOrderStatus() {
+    return this.status;
+  }
 }

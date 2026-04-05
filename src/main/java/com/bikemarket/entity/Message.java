@@ -1,14 +1,12 @@
 
 package com.bikemarket.entity;
 
-import com.bikemarket.enums.Role;
 
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+
 
 @Entity
 @Table(name = "Messages")

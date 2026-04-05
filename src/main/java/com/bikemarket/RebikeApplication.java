@@ -22,11 +22,10 @@ public class RebikeApplication {
   public CommandLineRunner seedUsers(UserService userService) {
     return args -> {
       List<User> seedUsers = List.of(
-              new User("Test Buyer", "testbuyer1@example.com", "0123456789", "password", Role.BUYER),
-              new User("Test Seller", "testseller1@example.com", "0123456788", "password", Role.SELLER),
-              new User("Test Inspector", "testinspector1@example.com", "0123456787", "password", Role.INSPECTOR),
-              new User("Test Admin", "testadmin1@example.com", "0123456786", "password", Role.ADMIN)
-      );
+          new User("Test Buyer", "testbuyer1@example.com", "0123456789", "password", Role.BUYER),
+          new User("Test Seller", "testseller1@example.com", "0123456788", "password", Role.SELLER),
+          new User("Test Inspector", "testinspector1@example.com", "0123456787", "password", Role.INSPECTOR),
+          new User("Test Admin", "testadmin1@example.com", "0123456786", "password", Role.ADMIN));
 
       for (User user : seedUsers) {
         if (userService.findUserByEmail(user.getEmail()) == null) {

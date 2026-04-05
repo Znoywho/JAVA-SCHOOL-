@@ -1,11 +1,8 @@
 package com.bikemarket.entity;
 
 import java.util.List;
-import java.time.LocalDateTime;
-import jakarta.persistence.GenerationType;
-import org.hibernate.annotations.CreationTimestamp;
 
-import com.bikemarket.enums.ProductStatus;
+import jakarta.persistence.GenerationType;
 
 import jakarta.persistence.*;
 
@@ -23,4 +20,9 @@ public class Brand {
   @OneToMany(mappedBy = "brand")
   private List<Product> products;
 
+
+  public Brand(String name) {
+    this.name = name;
+    this.products = null;
+  }
 }

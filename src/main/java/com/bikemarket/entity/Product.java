@@ -52,6 +52,9 @@ public class Product {
   @Column(name = "updated_at")
   private LocalDateTime updated_at;
 
+  @OneToOne(mappedBy = "product")
+  private InspectorReport inspectorReport;
+
   public Product(int Total, User SellerId, String Title, Brand brand, Category category, double ConditionPercent) {
     this.Total = Total;
     this.SellerId = SellerId;
@@ -61,6 +64,7 @@ public class Product {
     this.ConditionPercent = ConditionPercent;
     this.created_at = LocalDateTime.now();
     this.updated_at = LocalDateTime.now();
+    this.Status = ProductStatus.DRAFT;
 
   }
 
@@ -96,7 +100,6 @@ public class Product {
     return Status;
   }
 
-
   public LocalDateTime getCreated_at() {
     return created_at;
   }
@@ -112,7 +115,6 @@ public class Product {
   public void setTotal(int total) {
     Total = total;
   }
-
 
   public void setSellerId(User sellerId) {
     SellerId = sellerId;

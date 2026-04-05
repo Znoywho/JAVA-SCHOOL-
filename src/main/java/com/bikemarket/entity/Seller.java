@@ -2,12 +2,6 @@ package com.bikemarket.entity;
 
 import com.bikemarket.enums.Role;
 
-import jakarta.persistence.*;
-import org.hibernate.annotations.CreationTimestamp;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 // NOTE: Seller is a helper object, not a JPA entity
 public class Seller extends User {
