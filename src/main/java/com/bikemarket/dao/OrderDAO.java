@@ -178,7 +178,6 @@ public class OrderDAO {
       for (Item item : items) {
         OrderDetail detail = new OrderDetail(
                 order,
-                item.getQuantity(),
                 item.getProduct(),
                 item.getQuantity(),
                 item.getTotalPrice()
