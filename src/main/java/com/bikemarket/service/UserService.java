@@ -1,8 +1,8 @@
 package com.bikemarket.service;
 
 import com.bikemarket.entity.User;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
+import com.bikemarket.repository.IUserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 
@@ -10,23 +10,38 @@ import java.util.List;
 
 @Service
 @Transactional
-public class UserService {
+public class UserService implements IUserService {
 
-  @PersistenceContext
-  private EntityManager entityManager;
+  @Autowired
+  private IUserRepository userRepository;
 
+  @Override
   public void saveUser(User user) {
-    entityManager.persist(user);
+    userRepository.save(user);
   }
 
-  public User findUserById(Long id) {
-    return entityManager.find(User.class, id);
+  @Override
+  public User findUserById(long id) {
+    return userRepository.findById(id).orElse(null);
   }
 
+  @Override
   public User findUserByEmail(String email) {
-    List<User> list = entityManager.createQuery("FROM User u WHERE u.email = :email", User.class)
-            .setParameter("email", email)
-            .getResultList();
-    return list.isEmpty() ? null : list.get(0);
+    return userRepository.findByEmail(email);
+  }
+
+  @Override
+  public void deleteUser(User user) {
+    userRepository.delete(user);
+  }
+
+  @Override
+  public void updateUser(User user) {
+    userRepository.save(user);
+  }
+
+  @Override
+  public List<User> getAllUsers() {
+    return userRepository.findAll();
   }
 }
