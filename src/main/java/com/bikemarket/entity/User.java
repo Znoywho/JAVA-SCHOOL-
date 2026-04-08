@@ -107,4 +107,8 @@ public class User {
     this.role = role;
   }
 
+  public void setId(long id) {
+    this.Id = id;
+  }
+
 }

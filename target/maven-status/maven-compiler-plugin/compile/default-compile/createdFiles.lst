@@ -4,6 +4,7 @@ com/bikemarket/entity/Conversation.class
 com/bikemarket/entity/InspectorReport.class
 com/bikemarket/enums/OrderStatus.class
 com/bikemarket/entity/Shipping.class
+com/bikemarket/controller/UserController.class
 com/bikemarket/entity/Item.class
 com/bikemarket/entity/Buyer.class
 com/bikemarket/entity/Cart.class
