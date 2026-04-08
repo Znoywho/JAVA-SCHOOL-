@@ -1,6 +1,8 @@
 /mnt/datassd/CodeHub/REBIKE/src/main/java/com/bikemarket/RebikeApplication.java
 /mnt/datassd/CodeHub/REBIKE/src/main/java/com/bikemarket/controller/TestController.java
 /mnt/datassd/CodeHub/REBIKE/src/main/java/com/bikemarket/controller/UserController.java
+/mnt/datassd/CodeHub/REBIKE/src/main/java/com/bikemarket/dto/ApiResponse.java
+/mnt/datassd/CodeHub/REBIKE/src/main/java/com/bikemarket/dto/UserDTO.java
 /mnt/datassd/CodeHub/REBIKE/src/main/java/com/bikemarket/entity/Admin.java
 /mnt/datassd/CodeHub/REBIKE/src/main/java/com/bikemarket/entity/Bike.java
 /mnt/datassd/CodeHub/REBIKE/src/main/java/com/bikemarket/entity/Bill.java
@@ -27,6 +29,8 @@
 /mnt/datassd/CodeHub/REBIKE/src/main/java/com/bikemarket/enums/ProductStatus.java
 /mnt/datassd/CodeHub/REBIKE/src/main/java/com/bikemarket/enums/Role.java
 /mnt/datassd/CodeHub/REBIKE/src/main/java/com/bikemarket/enums/ShippingStatus.java
+/mnt/datassd/CodeHub/REBIKE/src/main/java/com/bikemarket/exception/GlobalExceptionHandler.java
+/mnt/datassd/CodeHub/REBIKE/src/main/java/com/bikemarket/exception/ResourceNotFoundException.java
 /mnt/datassd/CodeHub/REBIKE/src/main/java/com/bikemarket/repository/IUserRepository.java
 /mnt/datassd/CodeHub/REBIKE/src/main/java/com/bikemarket/repository/UserRepository.java
 /mnt/datassd/CodeHub/REBIKE/src/main/java/com/bikemarket/service/IUserService.java
