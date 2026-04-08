@@ -22,6 +22,7 @@ com/bikemarket/entity/Product.class
 com/bikemarket/entity/Brand.class
 com/bikemarket/service/IUserService.class
 com/bikemarket/entity/Bike.class
+com/bikemarket/controller/TestController.class
 com/bikemarket/repository/IUserRepository.class
 com/bikemarket/entity/Category.class
 com/bikemarket/enums/BillStatus.class

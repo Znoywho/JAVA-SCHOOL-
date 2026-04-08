@@ -28,7 +28,7 @@ public class Product {
   @Column(name = "Title", columnDefinition = "TEXT")
   private String Title;
 
-  @Column(name = "Price", precision = 10, scale = 2)
+  @Column(name = "Price")
   private double Price;
 
   @ManyToOne

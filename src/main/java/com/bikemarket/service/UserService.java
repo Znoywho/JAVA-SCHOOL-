@@ -1,7 +1,7 @@
 package com.bikemarket.service;
 
 import com.bikemarket.entity.User;
-import com.bikemarket.repository.IUserRepository;
+import com.bikemarket.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
@@ -13,7 +13,7 @@ import java.util.List;
 public class UserService implements IUserService {
 
   @Autowired
-  private IUserRepository userRepository;
+  private UserRepository userRepository;
 
   @Override
   public void saveUser(User user) {
