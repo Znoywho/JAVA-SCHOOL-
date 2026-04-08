@@ -25,6 +25,7 @@ com/bikemarket/entity/Bike.class
 com/bikemarket/repository/IUserRepository.class
 com/bikemarket/entity/Category.class
 com/bikemarket/enums/BillStatus.class
+com/bikemarket/repository/UserRepository.class
 com/bikemarket/entity/OrderDetail.class
 com/bikemarket/enums/ShippingStatus.class
 com/bikemarket/entity/User.class

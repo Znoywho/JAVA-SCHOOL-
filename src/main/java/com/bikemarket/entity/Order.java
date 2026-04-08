@@ -8,6 +8,8 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Entity
@@ -37,15 +39,21 @@ public class Order {
   @Column(name = "status", nullable = false)
   private OrderStatus status;
 
-  Order(User buyer, User seller, double totalPrice) {
+  @Column(name = "payment_method")
+  private String paymentMethod;
+
+  @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<OrderDetail> orderDetails = new ArrayList<>();
+
+  public Order() {
+  }
+
+  public Order(User buyer, User seller, double totalPrice) {
     this.buyer = buyer;
     this.seller = seller;
     this.totalPrice = totalPrice;
-    this.created_at = LocalDateTime.now();
     this.status = OrderStatus.PENDING;
   }
-
-  // TODO: add payment method
 
   public long getId() {
     return this.Id;
@@ -69,5 +77,43 @@ public class Order {
 
   public OrderStatus getOrderStatus() {
     return this.status;
+  }
+
+  public String getPaymentMethod() {
+    return paymentMethod;
+  }
+
+  public List<OrderDetail> getOrderDetails() {
+    return orderDetails;
+  }
+
+  public void setBuyer(User buyer) {
+    this.buyer = buyer;
+  }
+
+  public void setSeller(User seller) {
+    this.seller = seller;
+  }
+
+  public void setTotalPrice(double totalPrice) {
+    this.totalPrice = totalPrice;
+  }
+
+  public void setStatus(OrderStatus status) {
+    this.status = status;
+  }
+
+  public void setPaymentMethod(String paymentMethod) {
+    this.paymentMethod = paymentMethod;
+  }
+
+  public void addOrderDetail(OrderDetail orderDetail) {
+    orderDetails.add(orderDetail);
+    orderDetail.setOrder(this);
+  }
+
+  public void removeOrderDetail(OrderDetail orderDetail) {
+    orderDetails.remove(orderDetail);
+    orderDetail.setOrder(null);
   }
 }
