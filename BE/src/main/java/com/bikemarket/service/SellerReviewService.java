@@ -23,6 +23,9 @@ public class SellerReviewService implements ISellerReviewService {
 
     @Autowired
     private UserService userService;
+     
+    //Inject OrderService/OrderRepository
+    // còn fix createReview khi có OrderService/OrderRepository
 
     @Override
     public SellerReview createReview(long buyerId, long sellerId, long orderId, ReviewRating rating, String comment) {
@@ -37,7 +40,7 @@ public class SellerReviewService implements ISellerReviewService {
         }
 
         // TODO: Fetch Order from repository/service instead of creating new instance
-        // For now, this is a placeholder - you need to implement OrderService or OrderRepository
+        // For now, this is a placeholder - implement OrderService or OrderRepository
         Order order = null;
         // Order order = new Order();
         // order.setId(orderId);

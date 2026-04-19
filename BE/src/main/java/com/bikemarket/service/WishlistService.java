@@ -21,9 +21,10 @@ public class WishlistService implements IWishlistService {
 
     @Autowired
     private UserService userService;
-
+     // chờ ProductRepository / ProductService 
+     // Còn fix addToWishlist
     //@Autowired
-    //private ProductService productService;  // You need to create this if not exist
+    //private ProductService productService;  //create this if not exist
     // bỏ // khi có ProductService
     @Override
     public WhishList addToWishlist(long buyerId, long productId) {
@@ -40,7 +41,7 @@ public class WishlistService implements IWishlistService {
 
         WhishList wishlist = new WhishList();
         wishlist.setBuyer(buyer);
-        // You need to set product - create a Product service method or fetch from repo
+        // Need to set product - create a Product service method or fetch from repo
         //wishlist.setProduct(product);
         
         return wishlistRepository.save(wishlist);
