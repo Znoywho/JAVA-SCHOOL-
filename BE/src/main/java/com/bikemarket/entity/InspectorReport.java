@@ -4,12 +4,16 @@ package com.bikemarket.entity;
 import com.bikemarket.enums.InspectorReportStatus;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
 
 @Entity
+@Getter
+@Setter
 @Table(name = "InspectorReport")
 public class InspectorReport {
   @Id
@@ -45,42 +49,6 @@ public class InspectorReport {
     this.InspectorId = inspector;
     this.score_rating = score_rating;
     this.status = InspectorReportStatus.PENDING;
-    this.report_details = report_details;
-  }
-
-
-  public long getId() {
-    return this.Id;
-  }
-
-  public Product getProduct() {
-    return this.product;
-  }
-
-  public User getInspectorId() {
-    return this.InspectorId;
-  }
-
-
-  public LocalDateTime getCreated_at() {
-    return this.created_at;
-  }
-
-
-  public InspectorReportStatus getStatus() {
-    return this.status;
-  }
-
-
-  public String getReport_details() {
-    return this.report_details;
-  }
-
-  public void setStatus(InspectorReportStatus status) {
-    this.status = status;
-  }
-
-  public void setReport_details(String report_details) {
     this.report_details = report_details;
   }
 }

@@ -8,6 +8,7 @@ com/bikemarket/enums/OrderStatus.class
 com/bikemarket/entity/Shipping.class
 com/bikemarket/controller/UserController.class
 com/bikemarket/entity/Item.class
+com/bikemarket/controller/InspectorReportController.class
 com/bikemarket/entity/Buyer.class
 com/bikemarket/entity/Cart.class
 com/bikemarket/entity/Order.class
@@ -20,15 +21,17 @@ com/bikemarket/enums/InspectorReportStatus.class
 com/bikemarket/entity/Seller.class
 com/bikemarket/enums/ProductStatus.class
 com/bikemarket/enums/Role.class
+com/bikemarket/service/InspectorReportService.class
 com/bikemarket/RebikeApplication.class
 com/bikemarket/entity/Product.class
 com/bikemarket/entity/Brand.class
 com/bikemarket/service/IUserService.class
 com/bikemarket/entity/Bike.class
 com/bikemarket/controller/TestController.class
+com/bikemarket/repository/InspectorReportRepository.class
 com/bikemarket/exception/GlobalExceptionHandler.class
 com/bikemarket/dto/UserDTO.class
-com/bikemarket/repository/IUserRepository.class
+com/bikemarket/service/IInspectorReport.class
 com/bikemarket/entity/Category.class
 com/bikemarket/enums/BillStatus.class
 com/bikemarket/dto/UserDTO$UserDTOBuilder.class
