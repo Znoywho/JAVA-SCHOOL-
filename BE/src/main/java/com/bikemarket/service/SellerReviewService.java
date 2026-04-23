@@ -23,9 +23,9 @@ public class SellerReviewService implements ISellerReviewService {
 
     @Autowired
     private UserService userService;
-     
-    //Inject OrderService/OrderRepository
-    // còn fix createReview khi có OrderService/OrderRepository
+
+    @Autowired
+    private OrderService orderService;
 
     @Override
     public SellerReview createReview(long buyerId, long sellerId, long orderId, ReviewRating rating, String comment) {
@@ -39,11 +39,10 @@ public class SellerReviewService implements ISellerReviewService {
             throw new ResourceNotFoundException("Seller not found with id: " + sellerId);
         }
 
-        // TODO: Fetch Order from repository/service instead of creating new instance
-        // For now, this is a placeholder - implement OrderService or OrderRepository
-        Order order = null;
-        // Order order = new Order();
-        // order.setId(orderId);
+        Order order = orderService.findOrderById(orderId);
+        if (order == null) {
+            throw new ResourceNotFoundException("Order not found with id: " + orderId);
+        }
 
         SellerReview review = new SellerReview(buyer, seller, order, rating, comment);
         return reviewRepository.save(review);
@@ -124,3 +123,4 @@ public class SellerReviewService implements ISellerReviewService {
         return reviewRepository.findRecentReviewsBySellerIdOrderByDate(sellerId);
     }
 }
+
