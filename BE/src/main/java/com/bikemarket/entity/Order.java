@@ -4,12 +4,15 @@ import com.bikemarket.enums.*;
 
 
 
+import com.bikemarket.enums.BillStatus;
+import com.bikemarket.enums.OrderStatus;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
-
+import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
 
 
 @Entity
@@ -35,9 +38,17 @@ public class Order {
   @Column(name = "created_at", updatable = false)
   private LocalDateTime created_at;
 
+  @UpdateTimestamp
+  @Column(name = "updated_at")
+  private LocalDateTime updated_at;
+
   @Enumerated(EnumType.STRING)
   @Column(name = "status", nullable = false)
   private OrderStatus status;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "bill_status", nullable = false)
+  private BillStatus billStatus;
 
   @Column(name = "payment_method")
   private String paymentMethod;
@@ -48,11 +59,13 @@ public class Order {
   public Order() {
   }
 
-  public Order(User buyer, User seller, double totalPrice) {
+  public Order(User buyer, User seller, double totalPrice, String paymentMethod) {
     this.buyer = buyer;
     this.seller = seller;
     this.totalPrice = totalPrice;
+    this.paymentMethod = paymentMethod;
     this.status = OrderStatus.PENDING;
+    this.billStatus = BillStatus.PENDING;
   }
 
   public long getId() {
@@ -87,6 +100,11 @@ public class Order {
     return orderDetails;
   }
 
+  public BillStatus getBillStatus() {
+    return this.billStatus;
+  }
+
+
   public void setBuyer(User buyer) {
     this.buyer = buyer;
   }
@@ -116,4 +134,9 @@ public class Order {
     orderDetails.remove(orderDetail);
     orderDetail.setOrder(null);
   }
+
+  public void setBillStatus(BillStatus billStatus) {
+    this.billStatus = billStatus;
+  }
 }
+
