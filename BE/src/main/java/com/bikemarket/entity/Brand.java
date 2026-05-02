@@ -1,28 +1,19 @@
 package com.bikemarket.entity;
 
-import java.util.List;
-
-import jakarta.persistence.GenerationType;
-
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "Brand")
 public class Brand {
-  @Id
-  @GeneratedValue(strategy = GenerationType.AUTO)
-  @Column(name = "Id")
-  private long Id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-  @Column(name = "name")
-  private String name;
+    private String name;
 
-  @OneToMany(mappedBy = "brand")
-  private List<Product> products;
+    public Brand() {}
 
-
-  public Brand(String name) {
-    this.name = name;
-    this.products = null;
-  }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 }
