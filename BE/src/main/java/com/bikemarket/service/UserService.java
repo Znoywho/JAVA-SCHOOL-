@@ -21,6 +21,11 @@ public class UserService implements IUserService {
   }
 
   @Override
+  public void updateUser(User user) {
+    userRepository.update(user);
+  }
+
+  @Override
   public User findUserById(long id) {
     return userRepository.findById(id).orElse(null);
   }
@@ -37,7 +42,7 @@ public class UserService implements IUserService {
 
   @Override
   public void updateUser(User user) {
-    userRepository.save(user);
+    userRepository.update(user);
   }
 
   @Override

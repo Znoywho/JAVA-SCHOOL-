@@ -11,7 +11,7 @@ import java.util.List;
 
 @Service
 @Transactional
-public class InspectorReportService implements IInspectorReport {
+public class InspectorReportService implements IInspectorReportService {
 
     @Autowired
     private InspectorReportRepository inspectorReportRepository;

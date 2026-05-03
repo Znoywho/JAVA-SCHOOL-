@@ -1,8 +1,11 @@
 package com.bikemarket.entity;
 
+import lombok.Getter;
+import lombok.Setter;
 import jakarta.persistence.*;
 
-
+@Getter
+@Setter
 @Entity
 @Table(name = "OrderDetail")
 public class OrderDetail {

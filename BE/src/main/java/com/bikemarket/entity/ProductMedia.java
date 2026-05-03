@@ -1,13 +1,14 @@
 package com.bikemarket.entity;
-
-
+// getter and setter
+import lombok.Getter;
+import lombok.Setter;
 
 import jakarta.persistence.*;
 
-
+@Getter
+@Setter
 @Entity
 @Table(name = "PRODUCT_MEDIA")
-
 public class ProductMedia {
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)

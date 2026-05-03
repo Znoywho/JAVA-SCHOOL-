@@ -5,9 +5,12 @@ import java.time.LocalDateTime;
 import org.hibernate.annotations.CreationTimestamp;
 
 import com.bikemarket.enums.ProductStatus;
-
+import lombok.Getter;
+import lombok.Setter;
 import jakarta.persistence.*;
 
+@Getter
+@Setter
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
 @Table(name = "PRODUCT")

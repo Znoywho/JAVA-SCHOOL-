@@ -6,13 +6,16 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
+import lombok.Getter;
+import lombok.Setter;
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "WhishList")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Entity
+@Table(name = "WhishList")
 public class WhishList {
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)

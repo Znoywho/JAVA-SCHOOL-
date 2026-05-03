@@ -2,9 +2,12 @@
 package com.bikemarket.entity;
 
 import com.bikemarket.enums.ShippingStatus;
-
+import lombok.Getter;
+import lombok.Setter;
 import jakarta.persistence.*;
 
+@Getter
+@Setter
 @Entity
 @Table(name = "Shipping")
 public class Shipping {

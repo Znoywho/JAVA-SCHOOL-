@@ -3,17 +3,17 @@ package com.bikemarket.entity;
 import com.bikemarket.enums.NotificationType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.*;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
+
+@Getter
+@Setter
 @Entity
 @Table(name = "notifications")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class Notification {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

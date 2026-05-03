@@ -10,10 +10,9 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
-
-@Entity
 @Getter
 @Setter
+@Entity
 @Table(name = "InspectorReport")
 public class InspectorReport {
   @Id

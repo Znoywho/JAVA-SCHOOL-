@@ -2,11 +2,14 @@ package com.bikemarket.entity;
 
 
 import jakarta.persistence.*;
-
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Item
  */
+@Getter
+@Setter
 @Entity
 @Table(name = "Item")
 public class Item {

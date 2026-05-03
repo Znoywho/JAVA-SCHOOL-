@@ -7,13 +7,14 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
+import lombok.Getter;
+import lombok.Setter;
 import java.time.LocalDateTime;
 
+@Getter
+@Setter
 @Entity
 @Table(name = "seller_reviews")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class SellerReview {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

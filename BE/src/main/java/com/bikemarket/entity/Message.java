@@ -9,11 +9,13 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 @Entity
 @Table(name = "Messages")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class Message {
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)

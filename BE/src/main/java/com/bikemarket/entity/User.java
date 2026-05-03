@@ -4,10 +4,12 @@ import com.bikemarket.enums.Role;
 
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
-
+import lombok.Getter;
+import lombok.Setter;
 import java.time.LocalDateTime;
 
-
+@Getter
+@Setter
 @Entity
 @Table(name = "users")
 public class User {
@@ -58,57 +60,4 @@ public class User {
     this.role = role;
     this.created_at = LocalDateTime.now();
   }
-
-  public String getName() {
-    return name;
-  }
-
-  public String getEmail() {
-    return email;
-  }
-
-  public String getPhone() {
-    return phone;
-  }
-
-  public String getPassword() {
-    return password;
-  }
-
-  public Role getRole() {
-    return role;
-  }
-
-  public LocalDateTime getCreated_at() {
-    return created_at;
-  }
-
-  public long getId() {
-    return Id;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
-  public void setEmail(String email) {
-    this.email = email;
-  }
-
-  public void setPhone(String phone) {
-    this.phone = phone;
-  }
-
-  public void setPassword(String password) {
-    this.password = password;
-  }
-
-  public void setRole(Role role) {
-    this.role = role;
-  }
-
-  public void setId(long id) {
-    this.Id = id;
-  }
-
 }

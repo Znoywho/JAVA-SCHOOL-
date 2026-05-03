@@ -10,11 +10,14 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import lombok.Getter;
+import lombok.Setter;
+
+
+@Getter
+@Setter
 @Entity
 @Table(name = "Conversations")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class Conversation {
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)

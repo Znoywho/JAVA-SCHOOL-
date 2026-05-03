@@ -17,6 +17,4 @@ public class RebikeApplication {
   public static void main(String[] args) {
     SpringApplication.run(RebikeApplication.class, args);
   }
-
-
 }
