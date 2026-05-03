@@ -1,15 +1,7 @@
 package com.bikemarket.entity;
 
-import java.util.List;
-import jakarta.persistence.GenerationType;
-import lombok.Getter;
-import lombok.Setter;
-
 import jakarta.persistence.*;
 
-
-@Getter
-@Setter
 @Entity
 public class Category {
     @Id

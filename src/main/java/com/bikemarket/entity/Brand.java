@@ -1,24 +1,16 @@
 package com.bikemarket.entity;
 
-import java.util.List;
-import jakarta.persistence.GenerationType;
-import lombok.Getter;
-import lombok.Setter;
-
 import jakarta.persistence.*;
 
-
-@Getter
-@Setter
 @Entity
-public class Category {
+public class Brand {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String name;
 
-    public Category() {}
+    public Brand() {}
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }

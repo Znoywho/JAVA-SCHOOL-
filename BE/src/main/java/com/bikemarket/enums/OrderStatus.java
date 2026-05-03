@@ -2,7 +2,8 @@ package com.bikemarket.enums;
 
 public enum OrderStatus {
   PENDING,
-  SHIPPED,
+  CONFIRMED,
+  SHIPPING,
   DELIVERED,
   CANCELLED
 }

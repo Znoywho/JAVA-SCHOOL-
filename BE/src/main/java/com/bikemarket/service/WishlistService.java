@@ -21,19 +21,19 @@ public class WishlistService implements IWishlistService {
 
     @Autowired
     private UserService userService;
-     // chờ ProductRepository / ProductService 
-     // Còn fix addToWishlist
-    //@Autowired
-    //private ProductService productService;  //create this if not exist
-    // bỏ // khi có ProductService
+
+    @Autowired
+    private ProductService productService;
+
     @Override
     public WhishList addToWishlist(long buyerId, long productId) {
         User buyer = userService.findUserById(buyerId);
         if (buyer == null) {
             throw new ResourceNotFoundException("Buyer not found with id: " + buyerId);
         }
+        //check if already in wishlist
+        Product product = productService.findProductById(productId);
 
-        // Check if already in wishlist
         Optional<WhishList> existing = wishlistRepository.findByBuyerIdAndProductId(buyerId, productId);
         if (existing.isPresent()) {
             return existing.get();
@@ -41,8 +41,7 @@ public class WishlistService implements IWishlistService {
 
         WhishList wishlist = new WhishList();
         wishlist.setBuyer(buyer);
-        // Need to set product - create a Product service method or fetch from repo
-        //wishlist.setProduct(product);
+        wishlist.setProduct(product);
         
         return wishlistRepository.save(wishlist);
     }
