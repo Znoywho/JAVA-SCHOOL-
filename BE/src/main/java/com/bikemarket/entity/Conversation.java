@@ -12,10 +12,13 @@ import java.util.List;
 
 import lombok.Getter;
 import lombok.Setter;
-
+import lombok.Builder;
 
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "Conversations")
 public class Conversation {

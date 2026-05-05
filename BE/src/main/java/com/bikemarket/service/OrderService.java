@@ -145,4 +145,10 @@ public class OrderService implements IOrderService {
         res.setItems(items);
         return res;
     }
+
+    @Override
+    public Order findOrderById(Long orderId) {
+        return orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order không tồn tại: " + orderId));
+    }
 }

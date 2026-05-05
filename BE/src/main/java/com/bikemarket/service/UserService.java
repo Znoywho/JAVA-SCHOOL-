@@ -22,7 +22,7 @@ public class UserService implements IUserService {
 
   @Override
   public void updateUser(User user) {
-    userRepository.update(user);
+    userRepository.save(user);
   }
 
   @Override
@@ -41,12 +41,9 @@ public class UserService implements IUserService {
   }
 
   @Override
-  public void updateUser(User user) {
-    userRepository.update(user);
-  }
-
-  @Override
   public List<User> getAllUsers() {
     return userRepository.findAll();
   }
+
+  
 }

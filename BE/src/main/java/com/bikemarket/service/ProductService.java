@@ -20,6 +20,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import com.bikemarket.repository.ProductRepository;
 
 /**
  * Service xử lý nghiệp vụ Module Đăng tin & Quản lý xe - SCRUM-5
@@ -29,7 +30,7 @@ import org.springframework.stereotype.Service;
 public class ProductService implements IProductService {
 
     @Autowired
-    private IProductRepository productRepository;
+    private ProductRepository productRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -150,31 +151,36 @@ public class ProductService implements IProductService {
 
     @Override
     public Page<Product> getSellerProducts(long sellerId, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("created_at").descending());
-        return productRepository.findBySellerId_Id(sellerId, pageable);
+        // FIX: "created_at" → "createdAt" (tên field Java, không phải tên cột DB)
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        return productRepository.findBySellerId(sellerId, pageable);
     }
 
     @Override
     public Page<Product> getAllProducts(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("created_at").descending());
+        // FIX: "created_at" → "createdAt"
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         return productRepository.findByStatus(ProductStatus.PUBLISHED, pageable);
     }
 
     @Override
     public Page<Product> getProductsByCategory(long categoryId, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("created_at").descending());
+        // FIX: "created_at" → "createdAt"
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         return productRepository.findByCategory_IdAndStatus(categoryId, ProductStatus.PUBLISHED, pageable);
     }
 
     @Override
     public Page<Product> getProductsByBrand(long brandId, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("created_at").descending());
+        // FIX: "created_at" → "createdAt"
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         return productRepository.findByBrand_IdAndStatus(brandId, ProductStatus.PUBLISHED, pageable);
     }
 
     @Override
     public Page<Product> searchProducts(String keyword, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("created_at").descending());
+        // FIX: "created_at" → "createdAt"
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         return productRepository.searchByTitleAndStatus(keyword, ProductStatus.PUBLISHED, pageable);
     }
 

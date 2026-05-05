@@ -18,5 +18,5 @@ public class CreateOrderRequest {
     public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
 
     public List<OrderDetailRequest> getItems() { return items; }
-    public void setItems(List<OrderDetailRequest> items) { this.gitems = items; }
+    public void setItems(List<OrderDetailRequest> items) { this.items = items; }
 }

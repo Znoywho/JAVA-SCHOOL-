@@ -3,6 +3,7 @@ package com.bikemarket.service;
 import com.bikemarket.dto.*;
 import com.bikemarket.enums.OrderStatus;
 import java.util.List;
+import com.bikemarket.entity.Order;
 
 public interface IOrderService {
     OrderResponse createOrder(CreateOrderRequest request);
@@ -12,4 +13,5 @@ public interface IOrderService {
     OrderResponse updateStatus(Long orderId, OrderStatus status);
     OrderResponse markAsPaid(Long orderId);
     void cancelOrder(Long orderId);
+    Order findOrderById(Long orderId);
 }
