@@ -15,7 +15,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     Page<Product> findBySellerId(Long sellerId, Pageable pageable);
 
-    @Query("SELECT p FROM Product p WHERE p.SellerID.Id = :sellerId")
+    @Query("SELECT p FROM Product p WHERE p.SellerId.Id = :sellerId")
     List<Product> findBySellerId(@Param("sellerId") Long sellerId);
 
     Page<Product> findByStatus(ProductStatus status, Pageable pageable);
@@ -34,6 +34,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Page<Product> findByPriceBetweenAndStatus(double minPrice, double maxPrice, ProductStatus status, Pageable pageable);
 
     // Dùng bởi searchProducts()
-    @Query("SELECT p FROM Product p WHERE LOWER(p.Title) LIKE LOWER(CONCAT('%', :keyword, '%')) AND p.status = :status")
+    @Query("SELECT p FROM Product p WHERE LOWER(p.Title) LIKE LOWER(CONCAT('%', :keyword, '%')) AND p.Status = :status")
     Page<Product> searchByTitleAndStatus(@Param("keyword") String keyword, @Param("status") ProductStatus status, Pageable pageable);
 }
