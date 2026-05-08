@@ -1,16 +1,16 @@
 package com.bikemarket.entity;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.AccessLevel;
+import lombok.AccessLevel; // constructor for a subclass
 import lombok.NoArgsConstructor;
 import jakarta.persistence.*;
 
 @Getter
 @Setter
 @Entity
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor(access = AccessLevel.PROTECTED) // constructor for a subclass
 @Table(name = "Bikes")
-@PrimaryKeyJoinColumn(name = "Id")
+@PrimaryKeyJoinColumn(name = "Id") // primary key of the subclass
 public class Bike extends Product {
 
   @Column(name = "FrameSize")
