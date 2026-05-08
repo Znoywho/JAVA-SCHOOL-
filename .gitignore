@@ -30,3 +30,17 @@ replay_pid*
 # End of https://www.toptal.com/developers/gitignore/api/java
 
 Document.md
+
+# Build/cache artifacts
+BE/target/
+BE/.m2/
+target/
+.m2/
+
+# IDE/editor files
+.idea/
+.vscode/
+*.iml
+
+# OS artifacts
+.DS_Store
