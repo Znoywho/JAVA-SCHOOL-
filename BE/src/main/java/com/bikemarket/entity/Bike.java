@@ -1,12 +1,14 @@
 package com.bikemarket.entity;
 import lombok.Getter;
 import lombok.Setter;
-
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import jakarta.persistence.*;
 
 @Getter
 @Setter
 @Entity
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "Bikes")
 @PrimaryKeyJoinColumn(name = "Id")
 public class Bike extends Product {

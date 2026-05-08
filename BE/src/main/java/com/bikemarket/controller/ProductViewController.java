@@ -186,7 +186,7 @@ public class ProductViewController {
        Get all active products
        GET /api/products
      */
-    @GetMapping
+    @GetMapping("/all")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getAllProducts(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {

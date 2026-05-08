@@ -8,12 +8,14 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.Builder;
+import lombok.Data;
 import java.time.LocalDateTime;
 
-@Getter
-@Setter
-@NoArgsConstructor
+@Data
+@Builder
 @AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name = "WhishList")
 public class WhishList {
@@ -34,9 +36,9 @@ public class WhishList {
   @Column(name = "created_at", updatable = false)
   private LocalDateTime createdAt;
 
-  public WhishList(User buyer, Product product) {
-    this.buyer = buyer;
-    this.product = product;
-    this.createdAt = LocalDateTime.now();
-  }
+  // public WhishList(User buyer, Product product) {
+  //   this.buyer = buyer;
+  //   this.product = product;
+  //   this.createdAt = LocalDateTime.now();
+  // }
 }

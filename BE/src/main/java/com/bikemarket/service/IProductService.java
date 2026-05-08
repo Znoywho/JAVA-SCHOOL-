@@ -6,6 +6,7 @@ import com.bikemarket.entity.Bike;
 import com.bikemarket.entity.Product;
 import com.bikemarket.enums.ProductStatus;
 import org.springframework.data.domain.Page;
+import java.util.List;
 
 /**
  * Interface service cho Module Đăng tin & Quản lý xe - SCRUM-5
@@ -43,6 +44,18 @@ public interface IProductService {
 
     /** Lấy tất cả sản phẩm PUBLISHED (có phân trang) */
     Page<Product> getAllProducts(int page, int size);
+
+    /** Admin: Lấy toàn bộ sản phẩm (bao gồm mọi trạng thái) */
+    Page<Product> getAllProductsForAdmin(int page, int size);
+
+    /** Admin: Lấy toàn bộ xe đạp (bao gồm mọi trạng thái) */
+    Page<Bike> getAllBikesForAdmin(int page, int size);
+
+    /** Admin: Lấy toàn bộ sản phẩm (không phân trang) */
+    List<Product> getAllProductsForAdmin();
+
+    /** Admin: Lấy toàn bộ xe đạp (không phân trang) */
+    List<Bike> getAllBikesForAdmin();
 
     /** Lấy sản phẩm theo category */
     Page<Product> getProductsByCategory(long categoryId, int page, int size);

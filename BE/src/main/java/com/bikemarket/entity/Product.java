@@ -7,13 +7,14 @@ import org.hibernate.annotations.CreationTimestamp;
 import com.bikemarket.enums.ProductStatus;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.Builder;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import jakarta.persistence.*;
 
 @Getter
 @Setter
 @Entity
-// @Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Inheritance(strategy = InheritanceType.JOINED)
 @Table(name = "PRODUCT")
 public class Product {
@@ -50,7 +51,7 @@ public class Product {
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false, length = 20)
-  private ProductStatus Status;
+  private ProductStatus status;
 
   @CreationTimestamp
   @Column(name = "created_at")
@@ -73,7 +74,7 @@ public class Product {
     this.Price = Price;
     this.created_at = LocalDateTime.now();
     this.updated_at = LocalDateTime.now();
-    this.Status = ProductStatus.DRAFT;
+    this.status = ProductStatus.DRAFT;
 
   }
 
@@ -110,7 +111,7 @@ public class Product {
   }
 
   public ProductStatus getStatus() {
-    return Status;
+    return status;
   }
 
   public LocalDateTime getCreated_at() {
@@ -122,7 +123,7 @@ public class Product {
   }
 
   public void setStatus(ProductStatus status) {
-    Status = status;
+    this.status = status;
   }
 
   public void setPrice(double price) {
