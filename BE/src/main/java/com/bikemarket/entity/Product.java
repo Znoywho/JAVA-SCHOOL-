@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 import org.hibernate.annotations.CreationTimestamp;
 
 import com.bikemarket.enums.ProductStatus;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.AccessLevel;
@@ -17,6 +19,7 @@ import jakarta.persistence.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Inheritance(strategy = InheritanceType.JOINED)
 @Table(name = "PRODUCT")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Product {
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
@@ -29,6 +32,7 @@ public class Product {
   // NOTE: `@ForeignKey` just helps you name the constraint of the FK
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "SellerId", nullable = false, foreignKey = @ForeignKey(name = "SellerId"))
+  @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "password"})
   private User SellerId;
 
   @Column(name = "Title", columnDefinition = "TEXT")
@@ -44,6 +48,7 @@ public class Product {
   // TODO: Add category in product
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "category_id")
+  @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
   private Category category;
 
   @Column(name = "ConditionPercent")
@@ -62,6 +67,7 @@ public class Product {
   private LocalDateTime updated_at;
 
   @OneToOne(mappedBy = "product")
+  @JsonIgnore
   private InspectorReport inspectorReport;
 
   public Product(int Total, User SellerId, String Title, Brand brand, Category category, double ConditionPercent, double Price) {

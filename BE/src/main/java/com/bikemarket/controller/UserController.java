@@ -1,5 +1,6 @@
 package com.bikemarket.controller;
 
+import com.bikemarket.dto.ApiResponse;
 import com.bikemarket.entity.User;
 import com.bikemarket.exception.ResourceNotFoundException;
 import com.bikemarket.service.UserService;
@@ -8,7 +9,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/users")
@@ -16,6 +19,43 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    // ======= Login =======
+    @PostMapping("/login")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> login(@RequestBody Map<String, String> credentials) {
+        try {
+            String email = credentials.get("email");
+            String password = credentials.get("password");
+
+            if (email == null || password == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(ApiResponse.error("Bad Request", "Email và mật khẩu không được để trống"));
+            }
+
+            User user = userService.findUserByEmail(email);
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(ApiResponse.error("Unauthorized", "Email không tồn tại"));
+            }
+
+            if (!user.getPassword().equals(password)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(ApiResponse.error("Unauthorized", "Mật khẩu không chính xác"));
+            }
+
+            Map<String, Object> userData = new HashMap<>();
+            userData.put("id", user.getId());
+            userData.put("name", user.getName());
+            userData.put("email", user.getEmail());
+            userData.put("phone", user.getPhone());
+            userData.put("role", user.getRole().name());
+
+            return ResponseEntity.ok(ApiResponse.ok(userData, "Đăng nhập thành công"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Internal Server Error", e.getMessage()));
+        }
+    }
 
     // Get all users
     @GetMapping

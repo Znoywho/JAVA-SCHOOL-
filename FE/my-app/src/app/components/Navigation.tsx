@@ -1,6 +1,78 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router';
-import { Search, Heart, ShoppingCart, User, ChevronDown } from 'lucide-react';
+import { Search, Heart, ShoppingCart, User, ChevronDown, Package, LogOut } from 'lucide-react';
+import { getCurrentUser, logout, type AuthUser } from '../services/auth';
+
+function AuthSection() {
+  const [user, setUser] = useState<AuthUser | null>(getCurrentUser());
+  const [showDropdown, setShowDropdown] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleAuthChange = () => setUser(getCurrentUser());
+    window.addEventListener('auth-change', handleAuthChange);
+    return () => window.removeEventListener('auth-change', handleAuthChange);
+  }, []);
+
+  const handleLogout = () => {
+    logout();
+    setShowDropdown(false);
+    navigate('/');
+  };
+
+  if (!user) {
+    return (
+      <Link to="/login" className="ml-1 px-5 py-2.5 bg-gray-900 text-white rounded-xl hover:bg-gray-800 transition-colors text-sm font-semibold">
+        Đăng nhập
+      </Link>
+    );
+  }
+
+  return (
+    <div className="relative ml-2">
+      <button 
+        onClick={() => setShowDropdown(!showDropdown)}
+        className="flex items-center gap-2 px-2 py-1.5 hover:bg-gray-100 rounded-xl transition-colors"
+      >
+        <div className="w-8 h-8 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center font-bold text-sm">
+          {user.name.charAt(0).toUpperCase()}
+        </div>
+      </button>
+
+      {showDropdown && (
+        <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden z-50">
+          <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/50">
+            <p className="text-sm font-semibold text-gray-900">{user.name}</p>
+            <p className="text-xs text-gray-500">{user.email}</p>
+            <span className="inline-block mt-1 px-2 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-bold rounded uppercase">
+              {user.role}
+            </span>
+          </div>
+          
+          <div className="p-2">
+            {user.role === 'SELLER' && (
+              <Link 
+                to="/seller/dashboard" 
+                onClick={() => setShowDropdown(false)}
+                className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 rounded-lg text-sm text-gray-700 transition-colors"
+              >
+                <Package size={16} />
+                Quản lý gian hàng
+              </Link>
+            )}
+            <button 
+              onClick={handleLogout}
+              className="w-full flex items-center gap-2 px-3 py-2 hover:bg-red-50 rounded-lg text-sm text-red-600 transition-colors"
+            >
+              <LogOut size={16} />
+              Đăng xuất
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function Navigation() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -80,12 +152,8 @@ export function Navigation() {
                 0
               </span>
             </button>
-            <button className="p-2.5 hover:bg-gray-100 rounded-xl transition-colors">
-              <User size={22} className="text-gray-700" />
-            </button>
-            <button className="ml-1 px-5 py-2.5 bg-gray-900 text-white rounded-xl hover:bg-gray-800 transition-colors text-sm font-semibold">
-              Đăng nhập
-            </button>
+            
+            <AuthSection />
           </div>
         </div>
 

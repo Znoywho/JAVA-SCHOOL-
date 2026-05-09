@@ -9,6 +9,8 @@ import { Services } from './components/Services';
 import { Footer } from './components/Footer';
 import { ProductListPage } from './components/ProductListPage';
 import { ProductDetailPage } from './components/ProductDetailPage';
+import { LoginPage } from './components/LoginPage';
+import { SellerDashboard } from './components/SellerDashboard';
 
 function HomePage() {
   return (
@@ -31,6 +33,8 @@ export default function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/products" element={<ProductListPage />} />
         <Route path="/products/:id" element={<ProductDetailPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/seller/dashboard" element={<SellerDashboard />} />
       </Routes>
       <Footer />
     </div>

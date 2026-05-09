@@ -2,6 +2,7 @@ package com.bikemarket.entity;
 
 import java.util.List;
 import jakarta.persistence.GenerationType;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,6 +12,7 @@ import jakarta.persistence.*;
 @Getter
 @Setter
 @Entity
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

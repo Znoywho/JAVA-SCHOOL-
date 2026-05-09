@@ -152,25 +152,25 @@ public class ProductService implements IProductService {
 
     @Override
     public Page<Product> getSellerProducts(long sellerId, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("created_at").descending());
+        Pageable pageable = PageRequest.of(page, size, Sort.by("Id").descending());
         return productRepository.findBySellerId_Id(sellerId, pageable);
     }
 
     @Override
     public Page<Product> getAllProducts(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("created_at").descending());
+        Pageable pageable = PageRequest.of(page, size, Sort.by("Id").descending());
         return productRepository.findByStatus(ProductStatus.PUBLISHED, pageable);
     }
 
     @Override
     public Page<Product> getAllProductsForAdmin(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("created_at").descending());
+        Pageable pageable = PageRequest.of(page, size, Sort.by("Id").descending());
         return productRepository.findAll(pageable);
     }
 
     @Override
     public Page<Bike> getAllBikesForAdmin(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("created_at").descending());
+        Pageable pageable = PageRequest.of(page, size, Sort.by("Id").descending());
         return productRepository.findAllBikesWithProductInfo(pageable);
     }
 
@@ -186,19 +186,19 @@ public class ProductService implements IProductService {
 
     @Override
     public Page<Product> getProductsByCategory(long categoryId, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("created_at").descending());
+        Pageable pageable = PageRequest.of(page, size, Sort.by("Id").descending());
         return productRepository.findByCategory_IdAndStatus(categoryId, ProductStatus.PUBLISHED, pageable);
     }
 
     @Override
     public Page<Product> getProductsByBrand(long brandId, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("created_at").descending());
+        Pageable pageable = PageRequest.of(page, size, Sort.by("Id").descending());
         return productRepository.findByBrand_IdAndStatus(brandId, ProductStatus.PUBLISHED, pageable);
     }
 
     @Override
     public Page<Product> searchProducts(String keyword, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("created_at").descending());
+        Pageable pageable = PageRequest.of(page, size, Sort.by("Id").descending());
         return productRepository.searchByTitleAndStatus(keyword, ProductStatus.PUBLISHED, pageable);
     }
 

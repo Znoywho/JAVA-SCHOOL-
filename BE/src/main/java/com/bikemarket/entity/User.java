@@ -2,6 +2,8 @@ package com.bikemarket.entity;
 
 import com.bikemarket.enums.Role;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import lombok.Getter;
@@ -12,6 +14,7 @@ import java.time.LocalDateTime;
 @Setter
 @Entity
 @Table(name = "users")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class User {
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
