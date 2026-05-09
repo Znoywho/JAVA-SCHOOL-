@@ -1,33 +1,38 @@
 import { ChevronRight } from 'lucide-react';
+import { Link } from 'react-router';
 
 const categories = [
   {
     id: '1',
     name: 'Road',
-    image: 'figma:asset/cat-road.png',
-    bgColor: 'bg-pink-400',
-    link: '/road'
+    description: 'Xe đua đường trường',
+    bgGradient: 'from-rose-400 to-pink-500',
+    emoji: '🏎️',
+    categoryId: 1,
   },
   {
     id: '2',
     name: 'Gravel',
-    image: 'figma:asset/cat-gravel.png',
-    bgColor: 'bg-yellow-600',
-    link: '/gravel'
+    description: 'Xe đa địa hình',
+    bgGradient: 'from-amber-500 to-orange-600',
+    emoji: '🏔️',
+    categoryId: 3,
   },
   {
     id: '3',
-    name: 'Race Pro',
-    image: 'figma:asset/cat-race.png',
-    bgColor: 'bg-orange-300',
-    link: '/race-pro'
+    name: 'MTB',
+    description: 'Xe leo núi',
+    bgGradient: 'from-blue-400 to-blue-600',
+    emoji: '⛰️',
+    categoryId: 2,
   },
   {
     id: '4',
-    name: 'MTB',
-    image: 'figma:asset/cat-mtb.png',
-    bgColor: 'bg-blue-400',
-    link: '/mtb'
+    name: 'E-Bike',
+    description: 'Xe đạp điện',
+    bgGradient: 'from-emerald-400 to-teal-600',
+    emoji: '⚡',
+    categoryId: 4,
   }
 ];
 
@@ -35,34 +40,44 @@ export function Categories() {
   return (
     <section className="max-w-[1400px] mx-auto px-4 py-12">
       <div className="flex items-center justify-between mb-8">
-        <h2 className="text-3xl font-bold">Categories</h2>
-        <a href="#" className="flex items-center gap-1 text-blue-600 hover:underline">
+        <div>
+          <h2 className="text-3xl font-bold text-gray-900">Danh mục xe</h2>
+          <p className="text-gray-500 mt-1">Chọn loại xe phù hợp với bạn</p>
+        </div>
+        <Link
+          to="/products"
+          className="flex items-center gap-1 text-blue-600 hover:text-blue-800 font-medium transition-colors group"
+        >
           Xem tất cả
-          <ChevronRight size={20} />
-        </a>
+          <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
+        </Link>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {categories.map((category) => (
-          <a
+          <Link
             key={category.id}
-            href={category.link}
-            className={`${category.bgColor} rounded-lg overflow-hidden aspect-[4/5] relative group cursor-pointer hover:shadow-xl transition`}
+            to={`/products?category=${category.categoryId}`}
+            className={`bg-gradient-to-br ${category.bgGradient} rounded-2xl overflow-hidden aspect-[4/5] relative group cursor-pointer hover:shadow-2xl transition-all duration-300 hover:-translate-y-1`}
           >
-            <div className="absolute inset-0 flex items-center justify-center p-8">
-              <img
-                src={category.image}
-                alt={category.name}
-                className="w-full h-full object-contain group-hover:scale-105 transition-transform"
-                onError={(e) => {
-                  e.currentTarget.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='250' viewBox='0 0 200 250'%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-size='16' fill='white'%3EBike%3C/text%3E%3C/svg%3E";
-                }}
-              />
+            {/* Background pattern */}
+            <div className="absolute inset-0 opacity-10">
+              <div className="absolute inset-0" style={{
+                backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)',
+                backgroundSize: '30px 30px'
+              }} />
             </div>
-            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent p-6">
-              <h3 className="text-white text-2xl font-bold">{category.name}</h3>
+
+            {/* Content */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center p-8">
+              <span className="text-6xl mb-4 group-hover:scale-125 transition-transform duration-300">{category.emoji}</span>
+              <h3 className="text-white text-3xl font-bold mb-1">{category.name}</h3>
+              <p className="text-white/80 text-sm">{category.description}</p>
             </div>
-          </a>
+
+            {/* Bottom gradient */}
+            <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-black/20 to-transparent" />
+          </Link>
         ))}
       </div>
     </section>

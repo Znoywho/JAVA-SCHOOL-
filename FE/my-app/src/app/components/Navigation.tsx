@@ -1,65 +1,130 @@
-import { Search, Heart, ShoppingCart, User, Menu } from 'lucide-react';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router';
+import { Search, Heart, ShoppingCart, User, ChevronDown } from 'lucide-react';
 
 export function Navigation() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const navigate = useNavigate();
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
+
+  const categories = [
+    { name: 'Used Bikes', path: '/products' },
+    { name: 'Road', path: '/products?category=1' },
+    { name: 'MTB', path: '/products?category=2' },
+    { name: 'Gravel', path: '/products?category=3' },
+    { name: 'E-Bikes', path: '/products?category=4' },
+  ];
+
   return (
-    <nav className="w-full bg-white border-b border-gray-200">
+    <nav className="w-full bg-white border-b border-gray-200 sticky top-0 z-50">
       <div className="max-w-[1400px] mx-auto px-4">
         {/* Top bar */}
         <div className="flex items-center justify-between py-3">
           {/* Logo */}
-          <div className="flex items-center gap-2">
-            <img src="figma:asset/bike-logo.png" alt="Bike Store" className="h-8" onError={(e) => {
-              e.currentTarget.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='32' viewBox='0 0 40 32'%3E%3Ctext x='0' y='24' font-size='20' font-weight='bold'%3EBIKE%3C/text%3E%3C/svg%3E";
-            }} />
-          </div>
+          <Link to="/" className="flex items-center gap-2 group">
+            <div className="relative">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl flex items-center justify-center shadow-lg shadow-blue-600/20 group-hover:shadow-blue-600/40 transition-shadow">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="5.5" cy="17.5" r="3.5" />
+                  <circle cx="18.5" cy="17.5" r="3.5" />
+                  <path d="M15 6a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm-3 11.5V14l-3-3 4-3 2 3h2" />
+                </svg>
+              </div>
+            </div>
+            <div className="hidden sm:block">
+              <span className="text-xl font-extrabold tracking-tight text-gray-900">RE</span>
+              <span className="text-xl font-extrabold tracking-tight text-blue-600">BIKE</span>
+              <p className="text-[10px] text-gray-400 leading-none -mt-0.5">Xe đạp thể thao cũ</p>
+            </div>
+          </Link>
 
           {/* Search Bar */}
-          <div className="flex-1 max-w-xl mx-8">
+          <form onSubmit={handleSearch} className="flex-1 max-w-xl mx-8">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
               <input
                 type="text"
-                placeholder="Tìm kiếm sản phẩm..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                placeholder="Tìm kiếm xe đạp, thương hiệu, loại xe..."
+                className="w-full pl-11 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 focus:bg-white transition-all text-sm"
               />
+              {searchQuery && (
+                <button
+                  type="submit"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                >
+                  Tìm
+                </button>
+              )}
             </div>
-          </div>
+          </form>
 
           {/* Icons */}
-          <div className="flex items-center gap-4">
-            <button className="p-2 hover:bg-gray-100 rounded-lg relative">
-              <Heart size={24} />
-            </button>
-            <button className="p-2 hover:bg-gray-100 rounded-lg relative">
-              <ShoppingCart size={24} />
-              <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+          <div className="flex items-center gap-2">
+            <Link to="/products" className="p-2.5 hover:bg-gray-100 rounded-xl transition-colors relative group">
+              <Heart size={22} className="text-gray-700" />
+              <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full w-4.5 h-4.5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                0
+              </span>
+            </Link>
+            <button className="p-2.5 hover:bg-gray-100 rounded-xl transition-colors relative">
+              <ShoppingCart size={22} className="text-gray-700" />
+              <span className="absolute -top-0.5 -right-0.5 bg-blue-600 text-white text-[10px] font-bold rounded-full w-4.5 h-4.5 flex items-center justify-center">
                 0
               </span>
             </button>
-            <button className="p-2 hover:bg-gray-100 rounded-lg">
-              <User size={24} />
+            <button className="p-2.5 hover:bg-gray-100 rounded-xl transition-colors">
+              <User size={22} className="text-gray-700" />
             </button>
-            <button className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800">
+            <button className="ml-1 px-5 py-2.5 bg-gray-900 text-white rounded-xl hover:bg-gray-800 transition-colors text-sm font-semibold">
               Đăng nhập
             </button>
           </div>
         </div>
 
         {/* Navigation Menu */}
-        <div className="flex items-center gap-6 py-3 border-t border-gray-100">
-          <a href="#" className="hover:text-blue-600">Trang chủ</a>
-          <a href="#" className="hover:text-blue-600 flex items-center gap-1">
-            Digital Bikes Boro
-            <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded">ONLINE</span>
-          </a>
-          <a href="#" className="hover:text-blue-600">Used Bikes</a>
-          <a href="#" className="hover:text-blue-600">Road</a>
-          <a href="#" className="hover:text-blue-600">MTB</a>
-          <a href="#" className="hover:text-blue-600">Gravel</a>
-          <a href="#" className="hover:text-blue-600">E-Bikes</a>
-          <a href="#" className="hover:text-blue-600">Framesets</a>
-          <a href="#" className="hover:text-blue-600">Brands</a>
-          <a href="#" className="hover:text-blue-600">Build And Rent</a>
+        <div className="flex items-center gap-1 py-2 border-t border-gray-100 overflow-x-auto scrollbar-hide">
+          <Link
+            to="/"
+            className="px-3 py-1.5 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors whitespace-nowrap"
+          >
+            Trang chủ
+          </Link>
+
+          {categories.map(cat => (
+            <Link
+              key={cat.name}
+              to={cat.path}
+              className="px-3 py-1.5 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors whitespace-nowrap"
+            >
+              {cat.name}
+            </Link>
+          ))}
+
+          <Link
+            to="/products"
+            className="px-3 py-1.5 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors whitespace-nowrap flex items-center gap-1"
+          >
+            Thương hiệu
+            <ChevronDown size={14} />
+          </Link>
+
+          <div className="ml-auto">
+            <Link
+              to="/products"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition-colors whitespace-nowrap"
+            >
+              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+              Tất cả sản phẩm
+            </Link>
+          </div>
         </div>
       </div>
     </nav>
