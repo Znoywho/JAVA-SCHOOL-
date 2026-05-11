@@ -11,6 +11,8 @@ import { ProductListPage } from './components/ProductListPage';
 import { ProductDetailPage } from './components/ProductDetailPage';
 import { LoginPage } from './components/LoginPage';
 import { SellerDashboard } from './components/SellerDashboard';
+import { CartPage } from './components/CartPage';
+import { WishlistPage } from './components/WishlistPage';
 
 function HomePage() {
   return (
@@ -34,6 +36,8 @@ export default function App() {
         <Route path="/products" element={<ProductListPage />} />
         <Route path="/products/:id" element={<ProductDetailPage />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/cart" element={<CartPage />} />
+        <Route path="/wishlist" element={<WishlistPage />} />
         <Route path="/seller/dashboard" element={<SellerDashboard />} />
       </Routes>
       <Footer />

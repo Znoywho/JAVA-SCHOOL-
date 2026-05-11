@@ -62,6 +62,33 @@ export interface PaginatedData {
   size: number;
 }
 
+export interface CartItem {
+  itemId: number;
+  productId: number;
+  productTitle: string;
+  productPrice: number;
+  quantity: number;
+  totalPrice: number;
+}
+
+export interface CartData {
+  cartId: number;
+  buyerId: number;
+  items: CartItem[];
+  totalQuantity: number;
+  totalPrice: number;
+}
+
+export interface WishlistItem {
+  id: number;
+  buyerId: number;
+  buyerName?: string;
+  productId: number;
+  productTitle: string;
+  productPrice: number;
+  addedAt?: string;
+}
+
 // ==================== Response Normalization ====================
 
 /**
@@ -492,6 +519,117 @@ export async function deleteProduct(productId: number): Promise<void> {
   if (!response.ok || !json.success) {
     throw new Error(json.error || json.message || 'Xóa sản phẩm thất bại');
   }
+}
+
+// ==================== Cart & Wishlist API ====================
+
+export async function addToCart(buyerId: number, productId: number, quantity: number = 1): Promise<CartData> {
+  const response = await fetch(`${BASE_URL}/cart/items`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ buyerId, productId, quantity }),
+  });
+  const json = await response.json();
+  if (!response.ok || !json.success) {
+    throw new Error(json.error || json.message || 'Thêm vào giỏ hàng thất bại');
+  }
+  window.dispatchEvent(new Event('cart-change'));
+  return json.data;
+}
+
+export async function fetchCartCount(buyerId: number): Promise<number> {
+  return fetchWithFallback(
+    `${BASE_URL}/cart/${buyerId}/count`,
+    () => Number(localStorage.getItem(`rebike_cart_count_${buyerId}`) ?? 0),
+    (data) => Number(data ?? 0)
+  );
+}
+
+export async function fetchCart(buyerId: number): Promise<CartData> {
+  return fetchWithFallback(
+    `${BASE_URL}/cart/${buyerId}`,
+    () => ({
+      cartId: 0,
+      buyerId,
+      items: [],
+      totalQuantity: 0,
+      totalPrice: 0,
+    }),
+    (data) => data as CartData
+  );
+}
+
+export async function updateCartItemQuantity(
+  buyerId: number,
+  productId: number,
+  quantity: number
+): Promise<CartData> {
+  const response = await fetch(`${BASE_URL}/cart/${buyerId}/items/${productId}?quantity=${quantity}`, {
+    method: 'PATCH',
+  });
+  const json = await response.json();
+  if (!response.ok || !json.success) {
+    throw new Error(json.error || json.message || 'Cập nhật giỏ hàng thất bại');
+  }
+  window.dispatchEvent(new Event('cart-change'));
+  return json.data;
+}
+
+export async function removeFromCart(buyerId: number, productId: number): Promise<void> {
+  const response = await fetch(`${BASE_URL}/cart/${buyerId}/items/${productId}`, {
+    method: 'DELETE',
+  });
+  const json = await response.json();
+  if (!response.ok || !json.success) {
+    throw new Error(json.error || json.message || 'Xóa sản phẩm khỏi giỏ hàng thất bại');
+  }
+  window.dispatchEvent(new Event('cart-change'));
+}
+
+export async function addToWishlist(buyerId: number, productId: number): Promise<void> {
+  const response = await fetch(`${BASE_URL}/wishlist/${buyerId}/${productId}`, {
+    method: 'POST',
+  });
+  const json = await response.json();
+  if (!response.ok || !json.success) {
+    throw new Error(json.error || json.message || 'Thêm vào wishlist thất bại');
+  }
+  window.dispatchEvent(new Event('wishlist-change'));
+}
+
+export async function fetchWishlist(buyerId: number): Promise<WishlistItem[]> {
+  return fetchWithFallback(
+    `${BASE_URL}/wishlist/${buyerId}`,
+    () => [],
+    (data) => Array.isArray(data) ? data as WishlistItem[] : []
+  );
+}
+
+export async function removeFromWishlist(buyerId: number, productId: number): Promise<void> {
+  const response = await fetch(`${BASE_URL}/wishlist/${buyerId}/${productId}`, {
+    method: 'DELETE',
+  });
+  const json = await response.json();
+  if (!response.ok || !json.success) {
+    throw new Error(json.error || json.message || 'Xóa khỏi wishlist thất bại');
+  }
+  window.dispatchEvent(new Event('wishlist-change'));
+}
+
+export async function checkWishlist(buyerId: number, productId: number): Promise<boolean> {
+  return fetchWithFallback(
+    `${BASE_URL}/wishlist/${buyerId}/${productId}/check`,
+    () => false,
+    (data) => Boolean(data)
+  );
+}
+
+export async function fetchWishlistCount(buyerId: number): Promise<number> {
+  return fetchWithFallback(
+    `${BASE_URL}/wishlist/${buyerId}/count`,
+    () => Number(localStorage.getItem(`rebike_wishlist_count_${buyerId}`) ?? 0),
+    (data) => Number(data ?? 0)
+  );
 }
 
 // ==================== Utilities ====================

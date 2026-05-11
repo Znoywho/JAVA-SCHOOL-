@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { Search, Heart, ShoppingCart, User, ChevronDown, Package, LogOut } from 'lucide-react';
 import { getCurrentUser, logout, type AuthUser } from '../services/auth';
+import { fetchCartCount, fetchWishlistCount } from '../services/api';
 
 function AuthSection() {
   const [user, setUser] = useState<AuthUser | null>(getCurrentUser());
@@ -76,7 +77,37 @@ function AuthSection() {
 
 export function Navigation() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [cartCount, setCartCount] = useState(0);
+  const [wishlistCount, setWishlistCount] = useState(0);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const loadCounts = async () => {
+      const user = getCurrentUser();
+      if (!user) {
+        setCartCount(0);
+        setWishlistCount(0);
+        return;
+      }
+
+      const [cart, wishlist] = await Promise.all([
+        fetchCartCount(user.id),
+        fetchWishlistCount(user.id),
+      ]);
+      setCartCount(cart);
+      setWishlistCount(wishlist);
+    };
+
+    loadCounts();
+    window.addEventListener('auth-change', loadCounts);
+    window.addEventListener('cart-change', loadCounts);
+    window.addEventListener('wishlist-change', loadCounts);
+    return () => {
+      window.removeEventListener('auth-change', loadCounts);
+      window.removeEventListener('cart-change', loadCounts);
+      window.removeEventListener('wishlist-change', loadCounts);
+    };
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -140,18 +171,18 @@ export function Navigation() {
 
           {/* Icons */}
           <div className="flex items-center gap-2">
-            <Link to="/products" className="p-2.5 hover:bg-gray-100 rounded-xl transition-colors relative group">
+            <Link to="/wishlist" className="p-2.5 hover:bg-gray-100 rounded-xl transition-colors relative group">
               <Heart size={22} className="text-gray-700" />
-              <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full w-4.5 h-4.5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                0
+              <span className={`absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-4.5 h-4.5 px-1 flex items-center justify-center ${wishlistCount === 0 ? 'opacity-0 group-hover:opacity-100' : ''} transition-opacity`}>
+                {wishlistCount}
               </span>
             </Link>
-            <button className="p-2.5 hover:bg-gray-100 rounded-xl transition-colors relative">
+            <Link to="/cart" className="p-2.5 hover:bg-gray-100 rounded-xl transition-colors relative">
               <ShoppingCart size={22} className="text-gray-700" />
-              <span className="absolute -top-0.5 -right-0.5 bg-blue-600 text-white text-[10px] font-bold rounded-full w-4.5 h-4.5 flex items-center justify-center">
-                0
+              <span className="absolute -top-0.5 -right-0.5 bg-blue-600 text-white text-[10px] font-bold rounded-full min-w-4.5 h-4.5 px-1 flex items-center justify-center">
+                {cartCount}
               </span>
-            </button>
+            </Link>
             
             <AuthSection />
           </div>

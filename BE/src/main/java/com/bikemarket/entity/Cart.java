@@ -30,7 +30,10 @@ public class Cart {
   @Column(name = "updated_at", updatable = false)
   private LocalDateTime updated_at;
 
-  Cart(User buyer) {
+  public Cart() {
+  }
+
+  public Cart(User buyer) {
     this.buyer = buyer;
     this.created_at = LocalDateTime.now();
     this.updated_at = LocalDateTime.now();

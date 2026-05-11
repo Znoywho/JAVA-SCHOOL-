@@ -1,6 +1,8 @@
-import { Heart, Shield } from 'lucide-react';
+import { Heart, Shield, ShoppingCart } from 'lucide-react';
 import { Link } from 'react-router';
-import { getPlaceholderImage } from '../services/api';
+import { getCurrentUser } from '../services/auth';
+import { addToCart, addToWishlist, getPlaceholderImage, removeFromWishlist } from '../services/api';
+import { useState } from 'react';
 
 interface ProductCardProps {
   id: string;
@@ -30,12 +32,63 @@ export function ProductCard({
   isVerified,
 }: ProductCardProps) {
   const displayImage = image || getPlaceholderImage(parseInt(id) || 1);
+  const [favorite, setFavorite] = useState(false);
+  const [busy, setBusy] = useState(false);
 
   const conditionColor = conditionPercent
     ? conditionPercent >= 90 ? 'bg-emerald-500'
       : conditionPercent >= 70 ? 'bg-blue-500'
       : 'bg-orange-500'
     : 'bg-gray-300';
+
+  const requireBuyer = () => {
+    const user = getCurrentUser();
+    if (!user) {
+      alert('Vui lòng đăng nhập để sử dụng tính năng này');
+      return null;
+    }
+    if (user.role !== 'BUYER') {
+      alert('Chỉ tài khoản buyer mới sử dụng được tính năng này');
+      return null;
+    }
+    return user;
+  };
+
+  const handleAddToCart = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const user = requireBuyer();
+    if (!user || busy) return;
+    setBusy(true);
+    try {
+      await addToCart(user.id, Number(id), 1);
+      alert('Đã thêm vào giỏ hàng');
+    } catch (err: any) {
+      alert(err.message || 'Thêm vào giỏ hàng thất bại');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleToggleWishlist = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const user = requireBuyer();
+    if (!user || busy) return;
+    setBusy(true);
+    try {
+      if (favorite) {
+        await removeFromWishlist(user.id, Number(id));
+      } else {
+        await addToWishlist(user.id, Number(id));
+      }
+      setFavorite(prev => !prev);
+    } catch (err: any) {
+      alert(err.message || 'Cập nhật wishlist thất bại');
+    } finally {
+      setBusy(false);
+    }
+  };
 
   return (
     <Link
@@ -59,10 +112,10 @@ export function ProductCard({
 
       {/* Wishlist */}
       <button
-        onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+        onClick={handleToggleWishlist}
         className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-white hover:scale-110 z-10 shadow-sm"
       >
-        <Heart size={16} className="text-gray-600" />
+        <Heart size={16} className={favorite ? 'fill-red-500 text-red-500' : 'text-gray-600'} />
       </button>
 
       {/* Image */}
@@ -115,11 +168,20 @@ export function ProductCard({
           )}
         </div>
 
-        {/* Return Policy */}
-        <p className="text-[11px] text-gray-400 flex items-center gap-1">
-          <Shield size={11} />
-          {returnPolicy}
-        </p>
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-[11px] text-gray-400 flex items-center gap-1">
+            <Shield size={11} />
+            {returnPolicy}
+          </p>
+          <button
+            onClick={handleAddToCart}
+            disabled={busy}
+            className="p-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 disabled:opacity-50 transition-colors"
+            title="Thêm vào giỏ"
+          >
+            <ShoppingCart size={15} />
+          </button>
+        </div>
       </div>
     </Link>
   );

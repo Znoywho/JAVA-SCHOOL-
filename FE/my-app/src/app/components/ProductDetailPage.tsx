@@ -5,7 +5,11 @@ import {
   Shield, Award, MapPin, Star, ChevronLeft, Minus, Plus, Check,
   Ruler, Weight, Palette, User as UserIcon, CircleGauge
 } from 'lucide-react';
-import { fetchProductById, formatPrice, getPlaceholderImage, type Product } from '../services/api';
+import { getCurrentUser } from '../services/auth';
+import {
+  addToCart, addToWishlist, checkWishlist, fetchProductById,
+  formatPrice, getPlaceholderImage, removeFromWishlist, type Product
+} from '../services/api';
 
 export function ProductDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -25,6 +29,59 @@ export function ProductDetailPage() {
       });
     }
   }, [id]);
+
+  useEffect(() => {
+    const loadWishlistState = async () => {
+      const user = getCurrentUser();
+      if (!id || !user || user.role !== 'BUYER') return;
+      setIsFavorite(await checkWishlist(user.id, parseInt(id)));
+    };
+
+    loadWishlistState();
+  }, [id]);
+
+  const requireBuyer = () => {
+    const user = getCurrentUser();
+    if (!user) {
+      alert('Vui lòng đăng nhập để sử dụng tính năng này');
+      return null;
+    }
+    if (user.role !== 'BUYER') {
+      alert('Chỉ tài khoản buyer mới sử dụng được tính năng này');
+      return null;
+    }
+    return user;
+  };
+
+  const handleAddToCart = async () => {
+    if (!product) return;
+    const user = requireBuyer();
+    if (!user) return;
+
+    try {
+      await addToCart(user.id, product.id, quantity);
+      alert('Đã thêm vào giỏ hàng');
+    } catch (err: any) {
+      alert(err.message || 'Thêm vào giỏ hàng thất bại');
+    }
+  };
+
+  const handleToggleWishlist = async () => {
+    if (!product) return;
+    const user = requireBuyer();
+    if (!user) return;
+
+    try {
+      if (isFavorite) {
+        await removeFromWishlist(user.id, product.id);
+      } else {
+        await addToWishlist(user.id, product.id);
+      }
+      setIsFavorite(prev => !prev);
+    } catch (err: any) {
+      alert(err.message || 'Cập nhật wishlist thất bại');
+    }
+  };
 
   const productMedia = product?.media?.filter(media => media.mediaUrl) ?? [];
   const productImages = product
@@ -278,7 +335,10 @@ export function ProductDetailPage() {
               </div>
 
               <div className="flex gap-3">
-                <button className="flex-1 flex items-center justify-center gap-2 px-6 py-3.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all font-semibold shadow-lg shadow-blue-600/20 hover:shadow-blue-600/30 hover:-translate-y-0.5">
+                <button
+                  onClick={handleAddToCart}
+                  className="flex-1 flex items-center justify-center gap-2 px-6 py-3.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all font-semibold shadow-lg shadow-blue-600/20 hover:shadow-blue-600/30 hover:-translate-y-0.5"
+                >
                   <ShoppingCart size={20} />
                   Thêm vào giỏ
                 </button>
@@ -287,7 +347,7 @@ export function ProductDetailPage() {
                   Liên hệ
                 </button>
                 <button
-                  onClick={() => setIsFavorite(!isFavorite)}
+                  onClick={handleToggleWishlist}
                   className={`p-3.5 rounded-xl border-2 transition-all hover:-translate-y-0.5
                     ${isFavorite
                       ? 'border-red-200 bg-red-50 text-red-500'

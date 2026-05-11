@@ -30,7 +30,7 @@ public class Item {
   @Column(name = "Discount")
   private double discount;
 
-  @OneToOne(fetch = FetchType.LAZY)
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "ProductId", nullable = false, foreignKey = @ForeignKey(name = "ProductId"))
   private Product product;
 
