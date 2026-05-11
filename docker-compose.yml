@@ -5,13 +5,15 @@ services:
     build: 
       context: ./FE/my-app
       dockerfile: ../Dockerfile
+    image: rebike-frontend:latest      # ← thêm dòng này
     ports:
       - "3000:80"
     depends_on:
       - backend
 
   backend:
-    build: ./BE        # tên thư mục Spring Boot của bạn
+    build: ./BE
+    image: rebike-backend:latest       # ← thêm dòng này
     ports:
       - "8080:8080"
     environment:

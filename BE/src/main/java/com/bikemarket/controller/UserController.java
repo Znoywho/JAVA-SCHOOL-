@@ -33,6 +33,7 @@ public class UserController {
             }
 
             User user = userService.findUserByEmail(email);
+            System.out.println(user);
             if (user == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body(ApiResponse.error("Unauthorized", "Email không tồn tại"));

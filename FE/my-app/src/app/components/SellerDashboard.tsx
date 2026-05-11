@@ -59,7 +59,7 @@ export function SellerDashboard() {
 
   useEffect(() => {
     if (user) loadProducts();
-  }, [user]);
+  }, [user?.id]);
 
   const loadProducts = async () => {
     if (!user) return;
