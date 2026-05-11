@@ -26,13 +26,17 @@ export function ProductDetailPage() {
     }
   }, [id]);
 
-  // Generate placeholder images for gallery
-  const productImages = product ? [
-    getPlaceholderImage(product.id),
-    getPlaceholderImage(product.id + 100),
-    getPlaceholderImage(product.id + 200),
-    getPlaceholderImage(product.id + 300),
-  ] : [];
+  const productMedia = product?.media?.filter(media => media.mediaUrl) ?? [];
+  const productImages = product
+    ? productMedia.length > 0
+      ? productMedia.map(media => media.mediaUrl)
+      : [
+          getPlaceholderImage(product.id),
+          getPlaceholderImage(product.id + 100),
+          getPlaceholderImage(product.id + 200),
+          getPlaceholderImage(product.id + 300),
+        ]
+    : [];
 
   if (loading) {
     return (
@@ -102,11 +106,19 @@ export function ProductDetailPage() {
           <div className="space-y-4">
             {/* Main Image */}
             <div className="relative aspect-square bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm group">
-              <img
-                src={productImages[selectedImage]}
-                alt={product.title}
-                className="w-full h-full object-contain p-8 transition-transform group-hover:scale-105"
-              />
+              {productMedia[selectedImage]?.mediaType === 'VIDEO' ? (
+                <video
+                  src={productImages[selectedImage]}
+                  className="w-full h-full object-contain bg-black"
+                  controls
+                />
+              ) : (
+                <img
+                  src={productImages[selectedImage]}
+                  alt={product.title}
+                  className="w-full h-full object-contain p-8 transition-transform group-hover:scale-105"
+                />
+              )}
 
               {/* Verified badge */}
               {product.isVerified && (
@@ -150,7 +162,11 @@ export function ProductDetailPage() {
                       ? 'border-blue-500 ring-2 ring-blue-500/20 shadow-md'
                       : 'border-gray-200 hover:border-gray-300'}`}
                 >
-                  <img src={img} alt="" className="w-full h-full object-contain p-2" />
+                  {productMedia[index]?.mediaType === 'VIDEO' ? (
+                    <video src={img} className="w-full h-full object-cover" />
+                  ) : (
+                    <img src={img} alt="" className="w-full h-full object-contain p-2" />
+                  )}
                 </button>
               ))}
             </div>

@@ -1,6 +1,8 @@
 package com.bikemarket.entity;
-// getter and setter
+
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import jakarta.persistence.*;
@@ -8,6 +10,7 @@ import jakarta.persistence.*;
 @Getter
 @Setter
 @Entity
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "PRODUCT_MEDIA")
 public class ProductMedia {
   @Id
@@ -28,7 +31,7 @@ public class ProductMedia {
   @Column(name = "isThumbnail")
   private String isThumbnail;
 
-  ProductMedia(Product product, String media_url, String media_type, String isThumbnail) {
+  public ProductMedia(Product product, String media_url, String media_type, String isThumbnail) {
     this.ProductId = product;
     this.media_url = media_url;
     this.media_type = media_type;

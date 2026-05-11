@@ -2,14 +2,23 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router';
 import {
   Plus, Package, Eye, EyeOff, Trash2, ChevronRight,
-  AlertCircle, CheckCircle, X, Bike
+  AlertCircle, CheckCircle, X, Bike, Pencil, ImagePlus
 } from 'lucide-react';
 import { getCurrentUser } from '../services/auth';
 import {
   fetchBrands, fetchCategories, createBike, fetchSellerProducts,
-  updateProductStatus, deleteProduct, formatPrice,
+  updateProductStatus, deleteProduct, updateProduct, addProductMedia,
+  deleteProductMedia, formatPrice,
   type Brand, type Category, type Product, type BikeCreateDTO,
+  type ProductUpdateDTO,
 } from '../services/api';
+
+const PRODUCT_STATUSES = [
+  { value: 'DRAFT', label: 'Nháp' },
+  { value: 'PUBLISHED', label: 'Đang bán' },
+  { value: 'HIDDEN', label: 'Ẩn' },
+  { value: 'DELETED', label: 'Đã xóa' },
+];
 
 export function SellerDashboard() {
   const navigate = useNavigate();
@@ -28,6 +37,13 @@ export function SellerDashboard() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [editForm, setEditForm] = useState<Partial<ProductUpdateDTO>>({});
+  const [mediaForm, setMediaForm] = useState({
+    mediaUrl: '',
+    mediaType: 'IMAGE',
+    thumbnail: false,
+  });
 
   // Form state
   const [form, setForm] = useState<Partial<BikeCreateDTO>>({
@@ -37,6 +53,7 @@ export function SellerDashboard() {
     brandId: 0,
     categoryId: 0,
     conditionPercent: 85,
+    status: 'DRAFT',
     frameSize: 'M (54cm)',
     wheelSize: '700c',
     verified: false,
@@ -84,6 +101,26 @@ export function SellerDashboard() {
     setForm(prev => ({ ...prev, [field]: value }));
   };
 
+  const updateEditForm = (field: string, value: any) => {
+    setEditForm(prev => ({ ...prev, [field]: value }));
+  };
+
+  const startEdit = (product: Product) => {
+    setEditingProduct(product);
+    setEditForm({
+      sellerId: user?.id ?? 0,
+      title: product.title,
+      price: product.price,
+      total: product.total,
+      brandId: product.brandId ?? brands[0]?.id ?? 0,
+      categoryId: product.categoryId ?? categories[0]?.id ?? 0,
+      conditionPercent: product.conditionPercent,
+      status: product.status,
+    });
+    setMediaForm({ mediaUrl: '', mediaType: 'IMAGE', thumbnail: false });
+    window.scrollTo({ top: 240, behavior: 'smooth' });
+  };
+
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
@@ -107,6 +144,7 @@ export function SellerDashboard() {
         brandId: form.brandId!,
         categoryId: form.categoryId!,
         conditionPercent: form.conditionPercent ?? 85,
+        status: form.status ?? 'DRAFT',
         frameSize: form.frameSize ?? 'M',
         wheelSize: form.wheelSize ?? '700c',
         verified: form.verified ?? false,
@@ -129,12 +167,92 @@ export function SellerDashboard() {
   };
 
   const handleStatusChange = async (productId: number, newStatus: string) => {
+    if (!user) return;
     try {
-      await updateProductStatus(productId, newStatus);
+      await updateProductStatus(productId, user.id, newStatus);
       showMessage('success', `Đã ${newStatus === 'PUBLISHED' ? 'đăng' : 'ẩn'} sản phẩm`);
       loadProducts();
     } catch (err: any) {
       showMessage('error', err.message);
+    }
+  };
+
+  const handleUpdateProduct = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user || !editingProduct) return;
+
+    if (!editForm.title?.trim()) {
+      showMessage('error', 'Vui lòng nhập tiêu đề sản phẩm');
+      return;
+    }
+    if (!editForm.price || editForm.price <= 0) {
+      showMessage('error', 'Vui lòng nhập giá hợp lệ');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const updated = await updateProduct(editingProduct.id, {
+        sellerId: user.id,
+        title: editForm.title!,
+        price: editForm.price!,
+        total: editForm.total ?? 1,
+        brandId: editForm.brandId!,
+        categoryId: editForm.categoryId!,
+        conditionPercent: editForm.conditionPercent ?? 85,
+        status: editForm.status ?? editingProduct.status,
+      });
+      showMessage('success', 'Cập nhật sản phẩm thành công');
+      setEditingProduct(updated);
+      await loadProducts();
+    } catch (err: any) {
+      showMessage('error', err.message || 'Cập nhật sản phẩm thất bại');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddMedia = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user || !editingProduct) return;
+    if (!mediaForm.mediaUrl.trim()) {
+      showMessage('error', 'Vui lòng nhập đường dẫn media');
+      return;
+    }
+
+    try {
+      const media = await addProductMedia(editingProduct.id, {
+        sellerId: user.id,
+        mediaUrl: mediaForm.mediaUrl.trim(),
+        mediaType: mediaForm.mediaType,
+        thumbnail: mediaForm.thumbnail,
+      });
+      const nextProduct = {
+        ...editingProduct,
+        media: [...(editingProduct.media ?? []), media],
+      };
+      setEditingProduct(nextProduct);
+      setProducts(prev => prev.map(p => p.id === nextProduct.id ? nextProduct : p));
+      setMediaForm({ mediaUrl: '', mediaType: 'IMAGE', thumbnail: false });
+      showMessage('success', 'Đã thêm media cho sản phẩm');
+    } catch (err: any) {
+      showMessage('error', err.message || 'Thêm media thất bại');
+    }
+  };
+
+  const handleDeleteMedia = async (mediaId: number) => {
+    if (!user || !editingProduct) return;
+    try {
+      await deleteProductMedia(editingProduct.id, mediaId, user.id);
+      const nextProduct = {
+        ...editingProduct,
+        media: (editingProduct.media ?? []).filter(media => media.id !== mediaId),
+      };
+      setEditingProduct(nextProduct);
+      setProducts(prev => prev.map(p => p.id === nextProduct.id ? nextProduct : p));
+      showMessage('success', 'Đã xóa media');
+    } catch (err: any) {
+      showMessage('error', err.message || 'Xóa media thất bại');
     }
   };
 
@@ -226,6 +344,179 @@ export function SellerDashboard() {
         {/* Tab Content */}
         {activeTab === 'products' ? (
           /* ===== MY PRODUCTS ===== */
+          <div className="space-y-6">
+          {editingProduct && (
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+              <div className="flex items-start justify-between gap-4 mb-5">
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                    <Pencil size={20} className="text-blue-600" />
+                    Chỉnh sửa sản phẩm
+                  </h2>
+                  <p className="text-sm text-gray-500 mt-1 line-clamp-1">{editingProduct.title}</p>
+                </div>
+                <button
+                  onClick={() => setEditingProduct(null)}
+                  className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                  title="Đóng"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              <form onSubmit={handleUpdateProduct} className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                <div className="md:col-span-12">
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Tiêu đề</label>
+                  <input
+                    type="text"
+                    value={editForm.title ?? ''}
+                    onChange={e => updateEditForm('title', e.target.value)}
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/30 text-sm"
+                  />
+                </div>
+                <div className="md:col-span-3">
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Giá bán</label>
+                  <input
+                    type="number"
+                    value={editForm.price ?? ''}
+                    onChange={e => updateEditForm('price', parseFloat(e.target.value) || 0)}
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/30 text-sm"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Số lượng</label>
+                  <input
+                    type="number"
+                    value={editForm.total ?? 1}
+                    onChange={e => updateEditForm('total', parseInt(e.target.value) || 1)}
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/30 text-sm"
+                    min="1"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Tình trạng</label>
+                  <input
+                    type="number"
+                    value={editForm.conditionPercent ?? 85}
+                    onChange={e => updateEditForm('conditionPercent', parseInt(e.target.value) || 0)}
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/30 text-sm"
+                    min="0"
+                    max="100"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Thương hiệu</label>
+                  <select
+                    value={editForm.brandId ?? 0}
+                    onChange={e => updateEditForm('brandId', parseInt(e.target.value))}
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/30 text-sm"
+                  >
+                    {brands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+                  </select>
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Loại xe</label>
+                  <select
+                    value={editForm.categoryId ?? 0}
+                    onChange={e => updateEditForm('categoryId', parseInt(e.target.value))}
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/30 text-sm"
+                  >
+                    {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  </select>
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Trạng thái</label>
+                  <select
+                    value={editForm.status ?? 'DRAFT'}
+                    onChange={e => updateEditForm('status', e.target.value)}
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/30 text-sm"
+                  >
+                    {PRODUCT_STATUSES.map(status => (
+                      <option key={status.value} value={status.value}>{status.label}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="md:col-span-11" />
+                <div className="md:col-span-1 flex items-end">
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full px-4 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 text-sm"
+                  >
+                    Lưu
+                  </button>
+                </div>
+              </form>
+
+              <div className="border-t border-gray-100 mt-6 pt-5">
+                <h3 className="text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                  <ImagePlus size={18} className="text-blue-600" />
+                  Media sản phẩm
+                </h3>
+                <form onSubmit={handleAddMedia} className="grid grid-cols-1 md:grid-cols-12 gap-3 mb-4">
+                  <input
+                    type="url"
+                    value={mediaForm.mediaUrl}
+                    onChange={e => setMediaForm(prev => ({ ...prev, mediaUrl: e.target.value }))}
+                    placeholder="https://.../anh-xe.jpg"
+                    className="md:col-span-6 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/30 text-sm"
+                  />
+                  <select
+                    value={mediaForm.mediaType}
+                    onChange={e => setMediaForm(prev => ({ ...prev, mediaType: e.target.value }))}
+                    className="md:col-span-2 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/30 text-sm"
+                  >
+                    <option value="IMAGE">IMAGE</option>
+                    <option value="VIDEO">VIDEO</option>
+                  </select>
+                  <label className="md:col-span-2 flex items-center gap-2 px-3 py-3 text-sm text-gray-700">
+                    <input
+                      type="checkbox"
+                      checked={mediaForm.thumbnail}
+                      onChange={e => setMediaForm(prev => ({ ...prev, thumbnail: e.target.checked }))}
+                      className="w-4 h-4 rounded accent-blue-600"
+                    />
+                    Thumbnail
+                  </label>
+                  <button
+                    type="submit"
+                    className="md:col-span-2 px-4 py-3 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800 transition-colors text-sm"
+                  >
+                    Thêm media
+                  </button>
+                </form>
+
+                {(editingProduct.media ?? []).length === 0 ? (
+                  <p className="text-sm text-gray-400">Sản phẩm này chưa có media.</p>
+                ) : (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {(editingProduct.media ?? []).map(media => (
+                      <div key={media.id} className="relative rounded-xl border border-gray-200 overflow-hidden bg-gray-50">
+                        {media.mediaType === 'VIDEO' ? (
+                          <video src={media.mediaUrl} className="w-full aspect-video object-cover" controls />
+                        ) : (
+                          <img src={media.mediaUrl} alt="" className="w-full aspect-video object-cover" />
+                        )}
+                        <div className="flex items-center justify-between gap-2 px-3 py-2">
+                          <span className="text-xs text-gray-500 truncate">
+                            {media.thumbnail ? 'Thumbnail' : media.mediaType}
+                          </span>
+                          <button
+                            onClick={() => handleDeleteMedia(media.id)}
+                            className="p-1 text-red-500 hover:bg-red-50 rounded"
+                            title="Xóa media"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
             {loading ? (
               <div className="p-12 text-center text-gray-400">
@@ -328,6 +619,13 @@ export function SellerDashboard() {
                         </button>
                       )}
                       <button
+                        onClick={() => startEdit(product)}
+                        title="Sửa sản phẩm"
+                        className="p-2 hover:bg-blue-50 text-blue-600 rounded-lg transition-colors"
+                      >
+                        <Pencil size={16} />
+                      </button>
+                      <button
                         onClick={() => handleDelete(product.id)}
                         title="Xóa"
                         className="p-2 hover:bg-red-50 text-red-500 rounded-lg transition-colors"
@@ -339,6 +637,7 @@ export function SellerDashboard() {
                 ))}
               </div>
             )}
+          </div>
           </div>
         ) : (
           /* ===== CREATE FORM ===== */
@@ -406,7 +705,7 @@ export function SellerDashboard() {
               </div>
 
               {/* Row 3: Brand, Category, Color */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1.5">Thương hiệu</label>
                   <select
@@ -440,6 +739,18 @@ export function SellerDashboard() {
                     placeholder="VD: Đen/Đỏ"
                     className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/30 text-sm"
                   />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Trạng thái</label>
+                  <select
+                    value={form.status}
+                    onChange={e => updateForm('status', e.target.value)}
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/30 text-sm"
+                  >
+                    {PRODUCT_STATUSES.map(status => (
+                      <option key={status.value} value={status.value}>{status.label}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
 

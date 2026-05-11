@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * DTO trả về thông tin sản phẩm cho client (SCRUM-5)
@@ -34,4 +35,6 @@ public class ProductResponseDTO {
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    private List<ProductMediaResponseDTO> media;
 }

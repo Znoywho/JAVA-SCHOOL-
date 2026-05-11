@@ -17,6 +17,7 @@ export interface Product {
   categoryId?: number;
   createdAt: string;
   updatedAt?: string;
+  media?: ProductMedia[];
   // Bike-specific fields
   frameSize?: string;
   wheelSize?: string;
@@ -26,6 +27,14 @@ export interface Product {
   maxWeightCapacityKg?: number;
   weightKg?: number;
   color?: string;
+}
+
+export interface ProductMedia {
+  id: number;
+  productId: number;
+  mediaUrl: string;
+  mediaType: string;
+  thumbnail: boolean;
 }
 
 export interface Brand {
@@ -71,12 +80,13 @@ function normalizeProduct(raw: any): Product {
     status: raw.status ?? raw.Status ?? 'PUBLISHED',
     sellerId: raw.sellerId ?? raw.SellerId?.id ?? raw.SellerId ?? 0,
     sellerName: raw.sellerName ?? raw.SellerId?.name ?? undefined,
-    brand: raw.brand?.name ?? raw.brand ?? null,
+    brand: raw.brand?.name ?? raw.brandName ?? raw.brand ?? null,
     brandId: raw.brand?.id ?? raw.brandId ?? undefined,
-    category: raw.category?.name ?? raw.category ?? null,
+    category: raw.category?.name ?? raw.categoryName ?? raw.category ?? null,
     categoryId: raw.category?.id ?? raw.categoryId ?? undefined,
     createdAt: raw.createdAt ?? raw.created_at ?? new Date().toISOString(),
     updatedAt: raw.updatedAt ?? raw.updated_at ?? undefined,
+    media: Array.isArray(raw.media) ? raw.media.map(normalizeProductMedia) : [],
     // Bike fields (from joined Bike entity)
     frameSize: raw.frameSize ?? raw.FrameSize ?? undefined,
     wheelSize: raw.wheelSize ?? raw.WheelSize ?? undefined,
@@ -86,6 +96,18 @@ function normalizeProduct(raw: any): Product {
     maxWeightCapacityKg: raw.maxWeightCapacityKg ?? undefined,
     weightKg: raw.weightKg ?? undefined,
     color: raw.color ?? raw.Color ?? undefined,
+  };
+}
+
+function normalizeProductMedia(raw: any): ProductMedia {
+  const thumbnailValue = raw.thumbnail ?? raw.isThumbnail ?? false;
+
+  return {
+    id: raw.id ?? raw.Id ?? 0,
+    productId: raw.productId ?? raw.ProductId?.id ?? raw.ProductId?.Id ?? 0,
+    mediaUrl: raw.mediaUrl ?? raw.media_url ?? '',
+    mediaType: raw.mediaType ?? raw.media_type ?? 'IMAGE',
+    thumbnail: thumbnailValue === true || thumbnailValue === 'true',
   };
 }
 
@@ -354,6 +376,7 @@ export interface BikeCreateDTO {
   brandId: number;
   categoryId: number;
   conditionPercent: number;
+  status: string;
   frameSize: string;
   wheelSize: string;
   verified: boolean;
@@ -362,6 +385,24 @@ export interface BikeCreateDTO {
   maxWeightCapacityKg: number;
   weightKg: number;
   color: string;
+}
+
+export interface ProductUpdateDTO {
+  sellerId: number;
+  title: string;
+  price: number;
+  total: number;
+  brandId: number;
+  categoryId: number;
+  conditionPercent: number;
+  status: string;
+}
+
+export interface ProductMediaCreateDTO {
+  sellerId: number;
+  mediaUrl: string;
+  mediaType: string;
+  thumbnail: boolean;
 }
 
 export async function createBike(dto: BikeCreateDTO): Promise<any> {
@@ -384,18 +425,7 @@ export async function fetchSellerProducts(sellerId: number, page: number = 0, si
     (data) => {
       const rawProducts = data.products ?? [];
       return {
-        products: rawProducts.map((p: any) => ({
-          id: p.id,
-          title: p.title,
-          price: p.price,
-          total: p.total,
-          conditionPercent: p.conditionPercent,
-          status: p.status,
-          sellerId: p.sellerId,
-          brand: p.brandName ?? null,
-          category: p.categoryName ?? null,
-          createdAt: p.createdAt ?? new Date().toISOString(),
-        })),
+        products: rawProducts.map(normalizeProduct),
         currentPage: data.currentPage ?? 0,
         totalItems: data.totalItems ?? 0,
         totalPages: data.totalPages ?? 0,
@@ -405,11 +435,47 @@ export async function fetchSellerProducts(sellerId: number, page: number = 0, si
   );
 }
 
-export async function updateProductStatus(productId: number, status: string): Promise<any> {
+export async function updateProduct(productId: number, dto: ProductUpdateDTO): Promise<Product> {
+  const response = await fetch(`${BASE_URL}/seller/products/${productId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(dto),
+  });
+  const json = await response.json();
+  if (!response.ok || !json.success) {
+    throw new Error(json.error || json.message || 'Cập nhật sản phẩm thất bại');
+  }
+  return normalizeProduct(json.data);
+}
+
+export async function addProductMedia(productId: number, dto: ProductMediaCreateDTO): Promise<ProductMedia> {
+  const response = await fetch(`${BASE_URL}/seller/products/${productId}/media`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(dto),
+  });
+  const json = await response.json();
+  if (!response.ok || !json.success) {
+    throw new Error(json.error || json.message || 'Thêm media thất bại');
+  }
+  return normalizeProductMedia(json.data);
+}
+
+export async function deleteProductMedia(productId: number, mediaId: number, sellerId: number): Promise<void> {
+  const response = await fetch(`${BASE_URL}/seller/products/${productId}/media/${mediaId}?sellerId=${sellerId}`, {
+    method: 'DELETE',
+  });
+  const json = await response.json();
+  if (!response.ok || !json.success) {
+    throw new Error(json.error || json.message || 'Xóa media thất bại');
+  }
+}
+
+export async function updateProductStatus(productId: number, sellerId: number, status: string): Promise<any> {
   const response = await fetch(`${BASE_URL}/seller/products/${productId}/status`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ status }),
+    body: JSON.stringify({ sellerId, status }),
   });
   const json = await response.json();
   if (!response.ok || !json.success) {
@@ -442,4 +508,3 @@ export function getPlaceholderImage(seed: number = 1): string {
   const hue = (seed * 137) % 360;
   return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 400 400'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='hsl(${hue},70%25,95%25)'/%3E%3Cstop offset='100%25' stop-color='hsl(${hue},50%25,85%25)'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect fill='url(%23g)' width='400' height='400' rx='8'/%3E%3Cg transform='translate(200,180)' fill='hsl(${hue},30%25,50%25)' opacity='0.5'%3E%3Ccircle cx='-60' cy='30' r='45' fill='none' stroke='hsl(${hue},30%25,50%25)' stroke-width='4'/%3E%3Ccircle cx='60' cy='30' r='45' fill='none' stroke='hsl(${hue},30%25,50%25)' stroke-width='4'/%3E%3Cline x1='-30' y1='0' x2='30' y2='0' stroke='hsl(${hue},30%25,50%25)' stroke-width='3'/%3E%3Cline x1='-15' y1='30' x2='0' y2='-20' stroke='hsl(${hue},30%25,50%25)' stroke-width='3'/%3E%3Cline x1='0' y1='-20' x2='15' y2='30' stroke='hsl(${hue},30%25,50%25)' stroke-width='3'/%3E%3C/g%3E%3Ctext x='200' y='280' text-anchor='middle' font-family='system-ui' font-size='14' fill='hsl(${hue},30%25,45%25)'%3EREBIKE%3C/text%3E%3C/svg%3E`;
 }
-

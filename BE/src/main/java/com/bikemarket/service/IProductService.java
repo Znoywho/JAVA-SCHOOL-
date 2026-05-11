@@ -1,9 +1,11 @@
 package com.bikemarket.service;
 
 import com.bikemarket.dto.BikeRequestDTO;
+import com.bikemarket.dto.ProductMediaRequestDTO;
 import com.bikemarket.dto.ProductRequestDTO;
 import com.bikemarket.entity.Bike;
 import com.bikemarket.entity.Product;
+import com.bikemarket.entity.ProductMedia;
 import com.bikemarket.enums.ProductStatus;
 import org.springframework.data.domain.Page;
 import java.util.List;
@@ -27,7 +29,16 @@ public interface IProductService {
     Product updateProduct(long productId, ProductRequestDTO dto);
 
     /** Thay đổi trạng thái tin đăng */
-    Product updateProductStatus(long productId, ProductStatus status);
+    Product updateProductStatus(long productId, long sellerId, ProductStatus status);
+
+    /** Thêm media cho sản phẩm của seller */
+    ProductMedia addProductMedia(long productId, ProductMediaRequestDTO dto);
+
+    /** Lấy media của sản phẩm */
+    List<ProductMedia> getProductMedia(long productId);
+
+    /** Xóa media khỏi sản phẩm của seller */
+    void deleteProductMedia(long productId, long mediaId, long sellerId);
 
     // ---- Seller xóa tin đăng ----
 

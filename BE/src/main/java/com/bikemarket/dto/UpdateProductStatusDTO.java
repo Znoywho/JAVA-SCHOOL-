@@ -13,5 +13,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UpdateProductStatusDTO {
+    private long sellerId;
     private ProductStatus status;
 }

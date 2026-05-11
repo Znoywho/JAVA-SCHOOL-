@@ -1,7 +1,10 @@
 package com.bikemarket.controller;
 
 import com.bikemarket.dto.ApiResponse;
+import com.bikemarket.dto.ProductMediaResponseDTO;
+import com.bikemarket.dto.ProductResponseDTO;
 import com.bikemarket.entity.Product;
+import com.bikemarket.entity.ProductMedia;
 import com.bikemarket.enums.ProductStatus;
 import com.bikemarket.exception.ResourceNotFoundException;
 import com.bikemarket.service.ProductService;
@@ -59,6 +62,9 @@ public class ProductViewController {
             productData.put("brand", product.getBrand() != null ? product.getBrand().getName() : null);
             productData.put("category", product.getCategory() != null ? product.getCategory().getName() : null);
             productData.put("createdAt", product.getCreated_at());
+            productData.put("media", productService.getProductMedia(productId).stream()
+                    .map(this::toMediaResponseDTO)
+                    .toList());
 
             return ResponseEntity.ok(ApiResponse.ok(productData, "Product retrieved successfully"));
         } catch (ResourceNotFoundException e) {
@@ -83,7 +89,9 @@ public class ProductViewController {
             Page<Product> productsPage = productService.getSellerProducts(sellerId, page, size);
 
             Map<String, Object> response = new HashMap<>();
-            response.put("products", productsPage.getContent());
+            response.put("products", productsPage.getContent().stream()
+                    .map(this::toProductResponseDTO)
+                    .toList());
             response.put("currentPage", productsPage.getNumber());
             response.put("totalItems", productsPage.getTotalElements());
             response.put("totalPages", productsPage.getTotalPages());
@@ -115,7 +123,9 @@ public class ProductViewController {
 
             Map<String, Object> response = new HashMap<>();
             response.put("query", query);
-            response.put("products", productsPage.getContent());
+            response.put("products", productsPage.getContent().stream()
+                    .map(this::toProductResponseDTO)
+                    .toList());
             response.put("currentPage", productsPage.getNumber());
             response.put("totalItems", productsPage.getTotalElements());
             response.put("totalPages", productsPage.getTotalPages());
@@ -142,7 +152,9 @@ public class ProductViewController {
 
             Map<String, Object> response = new HashMap<>();
             response.put("categoryId", categoryId);
-            response.put("products", productsPage.getContent());
+            response.put("products", productsPage.getContent().stream()
+                    .map(this::toProductResponseDTO)
+                    .toList());
             response.put("currentPage", productsPage.getNumber());
             response.put("totalItems", productsPage.getTotalElements());
             response.put("totalPages", productsPage.getTotalPages());
@@ -169,7 +181,9 @@ public class ProductViewController {
 
             Map<String, Object> response = new HashMap<>();
             response.put("brandId", brandId);
-            response.put("products", productsPage.getContent());
+            response.put("products", productsPage.getContent().stream()
+                    .map(this::toProductResponseDTO)
+                    .toList());
             response.put("currentPage", productsPage.getNumber());
             response.put("totalItems", productsPage.getTotalElements());
             response.put("totalPages", productsPage.getTotalPages());
@@ -194,7 +208,9 @@ public class ProductViewController {
             Page<Product> productsPage = productService.getAllProducts(page, size);
 
             Map<String, Object> response = new HashMap<>();
-            response.put("products", productsPage.getContent());
+            response.put("products", productsPage.getContent().stream()
+                    .map(this::toProductResponseDTO)
+                    .toList());
             response.put("currentPage", productsPage.getNumber());
             response.put("totalItems", productsPage.getTotalElements());
             response.put("totalPages", productsPage.getTotalPages());
@@ -228,7 +244,9 @@ public class ProductViewController {
             Map<String, Object> response = new HashMap<>();
             response.put("minPrice", minPrice);
             response.put("maxPrice", maxPrice);
-            response.put("products", productsPage.getContent());
+            response.put("products", productsPage.getContent().stream()
+                    .map(this::toProductResponseDTO)
+                    .toList());
             response.put("currentPage", productsPage.getNumber());
             response.put("totalItems", productsPage.getTotalElements());
             response.put("totalPages", productsPage.getTotalPages());
@@ -239,5 +257,37 @@ public class ProductViewController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error("Internal Server Error", e.getMessage()));
         }
+    }
+
+    private ProductResponseDTO toProductResponseDTO(Product product) {
+        return ProductResponseDTO.builder()
+                .id(product.getId())
+                .title(product.getTitle())
+                .price(product.getPrice())
+                .total(product.getTotal())
+                .conditionPercent(product.getConditionPercent())
+                .status(product.getStatus() != null ? product.getStatus().name() : null)
+                .sellerId(product.getSellerId() != null ? product.getSellerId().getId() : 0)
+                .sellerName(product.getSellerId() != null ? product.getSellerId().getName() : null)
+                .brandId(product.getBrand() != null ? product.getBrand().getId() : 0)
+                .brandName(product.getBrand() != null ? product.getBrand().getName() : null)
+                .categoryId(product.getCategory() != null ? product.getCategory().getId() : 0)
+                .categoryName(product.getCategory() != null ? product.getCategory().getName() : null)
+                .createdAt(product.getCreated_at())
+                .updatedAt(product.getUpdated_at())
+                .media(productService.getProductMedia(product.getId()).stream()
+                        .map(this::toMediaResponseDTO)
+                        .toList())
+                .build();
+    }
+
+    private ProductMediaResponseDTO toMediaResponseDTO(ProductMedia media) {
+        return ProductMediaResponseDTO.builder()
+                .id(media.getId())
+                .productId(media.getProductId() != null ? media.getProductId().getId() : 0)
+                .mediaUrl(media.getMedia_url())
+                .mediaType(media.getMedia_type())
+                .thumbnail(Boolean.parseBoolean(media.getIsThumbnail()))
+                .build();
     }
 }

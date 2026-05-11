@@ -2,6 +2,7 @@ package com.bikemarket.repository;
 
 import com.bikemarket.entity.ProductMedia;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -14,5 +15,6 @@ public interface IProductMediaRepository extends JpaRepository<ProductMedia, Lon
     List<ProductMedia> findByProductId_Id(@Param("productId") long productId);
 
     @Query("DELETE FROM ProductMedia pm WHERE pm.ProductId.Id = :productId")
+    @Modifying
     void deleteByProductId_Id(@Param("productId") long productId);
 }

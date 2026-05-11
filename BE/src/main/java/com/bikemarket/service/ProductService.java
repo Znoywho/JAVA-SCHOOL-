@@ -1,17 +1,19 @@
 package com.bikemarket.service;
 
 import com.bikemarket.dto.BikeRequestDTO;
+import com.bikemarket.dto.ProductMediaRequestDTO;
 import com.bikemarket.dto.ProductRequestDTO;
 import com.bikemarket.entity.Bike;
 import com.bikemarket.entity.Brand;
 import com.bikemarket.entity.Category;
 import com.bikemarket.entity.Product;
+import com.bikemarket.entity.ProductMedia;
 import com.bikemarket.entity.User;
 import com.bikemarket.enums.ProductStatus;
 import com.bikemarket.exception.ResourceNotFoundException;
 import com.bikemarket.repository.IBrandRepository;
 import com.bikemarket.repository.ICategoryRepository;
-import com.bikemarket.repository.IProductRepository;
+import com.bikemarket.repository.IProductMediaRepository;
 import com.bikemarket.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +44,9 @@ public class ProductService implements IProductService {
     @Autowired
     private ICategoryRepository categoryRepository;
 
+    @Autowired
+    private IProductMediaRepository productMediaRepository;
+
     // =========================================================
     // Seller: Tạo tin đăng
     // =========================================================
@@ -61,6 +66,9 @@ public class ProductService implements IProductService {
                 dto.getConditionPercent(),
                 dto.getPrice()
         );
+        if (dto.getStatus() != null) {
+            product.setStatus(dto.getStatus());
+        }
 
         return productRepository.save(product);
     }
@@ -88,6 +96,9 @@ public class ProductService implements IProductService {
                 dto.getWeightKg(),
                 dto.getColor()
         );
+        if (dto.getStatus() != null) {
+            bike.setStatus(dto.getStatus());
+        }
 
         return (Bike) productRepository.save(bike);
     }
@@ -99,6 +110,7 @@ public class ProductService implements IProductService {
     @Override
     public Product updateProduct(long productId, ProductRequestDTO dto) {
         Product product = findProductById(productId);
+        ensureSellerOwnsProduct(product, dto.getSellerId());
 
         if (dto.getTitle() != null && !dto.getTitle().isBlank()) {
             product.setTitle(dto.getTitle());
@@ -118,13 +130,60 @@ public class ProductService implements IProductService {
         if (dto.getCategoryId() > 0) {
             product.setCategory(findCategoryById(dto.getCategoryId()));
         }
+        if (dto.getStatus() != null) {
+            product.setStatus(dto.getStatus());
+        }
 
         return productRepository.save(product);
     }
 
     @Override
-    public Product updateProductStatus(long productId, ProductStatus status) {
+    public ProductMedia addProductMedia(long productId, ProductMediaRequestDTO dto) {
         Product product = findProductById(productId);
+        ensureSellerOwnsProduct(product, dto.getSellerId());
+
+        if (dto.getMediaUrl() == null || dto.getMediaUrl().isBlank()) {
+            throw new IllegalArgumentException("Media URL không được để trống");
+        }
+        if (dto.getMediaType() == null || dto.getMediaType().isBlank()) {
+            throw new IllegalArgumentException("Media type không được để trống");
+        }
+
+        ProductMedia media = new ProductMedia(
+                product,
+                dto.getMediaUrl().trim(),
+                dto.getMediaType().trim(),
+                Boolean.toString(dto.isThumbnail())
+        );
+
+        return productMediaRepository.save(media);
+    }
+
+    @Override
+    public List<ProductMedia> getProductMedia(long productId) {
+        findProductById(productId);
+        return productMediaRepository.findByProductId_Id(productId);
+    }
+
+    @Override
+    public void deleteProductMedia(long productId, long mediaId, long sellerId) {
+        Product product = findProductById(productId);
+        ensureSellerOwnsProduct(product, sellerId);
+
+        ProductMedia media = productMediaRepository.findById(mediaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product media not found with id: " + mediaId));
+
+        if (media.getProductId() == null || media.getProductId().getId() != productId) {
+            throw new IllegalArgumentException("Media không thuộc sản phẩm này");
+        }
+
+        productMediaRepository.delete(media);
+    }
+
+    @Override
+    public Product updateProductStatus(long productId, long sellerId, ProductStatus status) {
+        Product product = findProductById(productId);
+        ensureSellerOwnsProduct(product, sellerId);
         product.setStatus(status);
         return productRepository.save(product);
     }
@@ -215,6 +274,15 @@ public class ProductService implements IProductService {
     private User findSellerById(long sellerId) {
         return userRepository.findById(sellerId)
                 .orElseThrow(() -> new ResourceNotFoundException("Seller not found with id: " + sellerId));
+    }
+
+    private void ensureSellerOwnsProduct(Product product, long sellerId) {
+        if (sellerId <= 0) {
+            throw new IllegalArgumentException("Seller ID không hợp lệ");
+        }
+        if (product.getSellerId() == null || product.getSellerId().getId() != sellerId) {
+            throw new IllegalArgumentException("Seller không có quyền thao tác với sản phẩm này");
+        }
     }
 
     private Brand findBrandById(long brandId) {

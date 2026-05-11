@@ -1,5 +1,6 @@
 package com.bikemarket.dto;
 
+import com.bikemarket.enums.ProductStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -23,6 +24,7 @@ public class BikeRequestDTO {
     private long brandId;
     private long categoryId;
     private double conditionPercent;
+    private ProductStatus status;
 
     // ---- Thông tin riêng của xe đạp (Bike) ----
 

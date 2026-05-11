@@ -1,5 +1,6 @@
 package com.bikemarket.dto;
 
+import com.bikemarket.enums.ProductStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -34,4 +35,7 @@ public class ProductRequestDTO {
 
     /** Phần trăm tình trạng xe (0-100) */
     private double conditionPercent;
+
+    /** Trạng thái tin đăng */
+    private ProductStatus status;
 }

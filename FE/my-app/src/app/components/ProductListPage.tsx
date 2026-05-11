@@ -144,6 +144,12 @@ export function ProductListPage() {
     setExpandedFilters(prev => ({ ...prev, [section]: !prev[section] }));
   };
 
+  const getProductCardImage = (product: Product) => {
+    const thumbnail = product.media?.find(media => media.thumbnail && media.mediaType !== 'VIDEO');
+    const firstImage = product.media?.find(media => media.mediaType !== 'VIDEO');
+    return thumbnail?.mediaUrl || firstImage?.mediaUrl || '';
+  };
+
   // Skeleton loader
   const SkeletonCard = () => (
     <div className="bg-white rounded-xl overflow-hidden border border-gray-100 animate-pulse">
@@ -302,9 +308,11 @@ export function ProductListPage() {
                 {expandedFilters.category && (
                   <div className="px-4 pb-4 space-y-2">
                     {categories.map(cat => (
-                      <label
+                      <button
                         key={cat.id}
-                        className="flex items-center gap-3 cursor-pointer group"
+                        type="button"
+                        onClick={() => toggleCategory(cat.id)}
+                        className="flex w-full items-center gap-3 cursor-pointer group text-left"
                       >
                         <div className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all
                           ${selectedCategories.includes(cat.id)
@@ -318,7 +326,7 @@ export function ProductListPage() {
                           )}
                         </div>
                         <span className="text-sm text-gray-700 group-hover:text-gray-900">{cat.name}</span>
-                      </label>
+                      </button>
                     ))}
                   </div>
                 )}
@@ -339,9 +347,11 @@ export function ProductListPage() {
                 {expandedFilters.brand && (
                   <div className="px-4 pb-4 space-y-2">
                     {brands.map(brand => (
-                      <label
+                      <button
                         key={brand.id}
-                        className="flex items-center gap-3 cursor-pointer group"
+                        type="button"
+                        onClick={() => toggleBrand(brand.id)}
+                        className="flex w-full items-center gap-3 cursor-pointer group text-left"
                       >
                         <div className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all
                           ${selectedBrands.includes(brand.id)
@@ -355,7 +365,7 @@ export function ProductListPage() {
                           )}
                         </div>
                         <span className="text-sm text-gray-700 group-hover:text-gray-900">{brand.name}</span>
-                      </label>
+                      </button>
                     ))}
                   </div>
                 )}
@@ -497,7 +507,7 @@ export function ProductListPage() {
                   >
                     <ProductCard
                       id={String(product.id)}
-                      image=""
+                      image={getProductCardImage(product)}
                       brand={product.brand || 'Unknown'}
                       category={product.category || 'Bike'}
                       name={product.title}
