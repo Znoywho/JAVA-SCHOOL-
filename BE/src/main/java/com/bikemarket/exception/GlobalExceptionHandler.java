@@ -36,6 +36,14 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error("Validation Failed", errorMessage));
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiResponse<?>> handleIllegalArgument(IllegalArgumentException ex) {
+        logger.warn("Business validation error: {}", ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error("Bad Request", ex.getMessage()));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<?>> handleGenericException(Exception ex) {
         logger.error("Internal server error", ex);

@@ -121,6 +121,8 @@ public class CartService implements ICartService {
         return CartItemDTO.builder()
                 .itemId(item.getId())
                 .productId(item.getProduct().getId())
+                .sellerId(item.getProduct().getSellerId().getId())
+                .sellerName(item.getProduct().getSellerId().getName())
                 .productTitle(item.getProduct().getTitle())
                 .productPrice(item.getProduct().getPrice())
                 .quantity(item.getQuantity())

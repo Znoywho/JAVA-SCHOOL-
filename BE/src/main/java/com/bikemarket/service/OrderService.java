@@ -19,43 +19,68 @@ public class OrderService implements IOrderService {
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
+    private final IShippingService shippingService;
 
     public OrderService(OrderRepository orderRepository,
                         UserRepository userRepository,
-                        ProductRepository productRepository) {
+                        ProductRepository productRepository,
+                        IShippingService shippingService) {
         this.orderRepository = orderRepository;
         this.userRepository = userRepository;
         this.productRepository = productRepository;
+        this.shippingService = shippingService;
     }
 
     @Override
     public OrderResponse createOrder(CreateOrderRequest request) {
+        if (request.getItems() == null || request.getItems().isEmpty()) {
+            throw new IllegalArgumentException("Đơn hàng phải có ít nhất một sản phẩm");
+        }
+
         User buyer = userRepository.findById(request.getBuyerId())
-                .orElseThrow(() -> new RuntimeException("Buyer không tồn tại: " + request.getBuyerId()));
+                .orElseThrow(() -> new IllegalArgumentException("Buyer không tồn tại: " + request.getBuyerId()));
         User seller = userRepository.findById(request.getSellerId())
-                .orElseThrow(() -> new RuntimeException("Seller không tồn tại: " + request.getSellerId()));
+                .orElseThrow(() -> new IllegalArgumentException("Seller không tồn tại: " + request.getSellerId()));
 
         Order order = new Order(buyer, seller, 0, request.getPaymentMethod());
 
         double total = 0;
         for (OrderDetailRequest item : request.getItems()) {
             Product product = productRepository.findById(item.getProductId())
-                    .orElseThrow(() -> new RuntimeException("Sản phẩm không tồn tại: " + item.getProductId()));
+                    .orElseThrow(() -> new IllegalArgumentException("Sản phẩm không tồn tại: " + item.getProductId()));
+
+            if (product.getSellerId().getId() != seller.getId()) {
+                throw new IllegalArgumentException("Sản phẩm '" + product.getTitle() + "' không thuộc seller đã chọn");
+            }
+
+            if (item.getQuantity() <= 0) {
+                throw new IllegalArgumentException("Số lượng sản phẩm phải lớn hơn 0");
+            }
 
             if (product.getTotal() < item.getQuantity()) {
-                throw new RuntimeException("Sản phẩm '" + product.getTitle() + "' không đủ số lượng");
+                throw new IllegalArgumentException("Sản phẩm '" + product.getTitle() + "' không đủ số lượng");
             }
 
             product.setTotal(product.getTotal() - item.getQuantity());
             productRepository.save(product);
 
-            OrderDetail detail = new OrderDetail(order, product, item.getQuantity(), item.getPrice());
+            double productPrice = product.getPrice();
+            OrderDetail detail = new OrderDetail(order, product, item.getQuantity(), productPrice);
             order.addOrderDetail(detail);
-            total += item.getPrice() * item.getQuantity();
+            total += productPrice * item.getQuantity();
         }
 
-        order.setTotalPrice(total);
-        return mapToResponse(orderRepository.save(order));
+        ShippingQuoteResponse quote = shippingService.quote(
+                request.getShipping() != null ? request.getShipping().getShippingCompanyId() : null,
+                total,
+                request.getPaymentMethod()
+        );
+
+        order.setTotalPrice(total + quote.getShippingFee());
+        Order savedOrder = orderRepository.save(order);
+        shippingService.createShipmentForOrder(savedOrder, request.getShipping(), total);
+
+        return mapToResponse(savedOrder);
     }
 
     @Override
@@ -117,6 +142,7 @@ public class OrderService implements IOrderService {
 
         order.setStatus(OrderStatus.CANCELLED);
         order.setBillStatus(BillStatus.CANCELLED);
+        shippingService.cancelShipmentForOrder(order);
         orderRepository.save(order);
     }
 
@@ -143,6 +169,10 @@ public class OrderService implements IOrderService {
         }).collect(Collectors.toList());
 
         res.setItems(items);
+        double productTotal = items.stream().mapToDouble(OrderDetailResponse::getSubtotal).sum();
+        res.setProductTotal(productTotal);
+        res.setShippingFee(Math.max(0, order.getTotalPrice() - productTotal));
+        shippingService.getShipmentByOrder(order.getId()).ifPresent(res::setShipment);
         return res;
     }
 

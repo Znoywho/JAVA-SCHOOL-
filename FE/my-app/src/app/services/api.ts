@@ -65,6 +65,8 @@ export interface PaginatedData {
 export interface CartItem {
   itemId: number;
   productId: number;
+  sellerId: number;
+  sellerName?: string;
   productTitle: string;
   productPrice: number;
   quantity: number;
@@ -87,6 +89,94 @@ export interface WishlistItem {
   productTitle: string;
   productPrice: number;
   addedAt?: string;
+}
+
+export type PaymentMethod = 'COD' | 'BANK_TRANSFER' | 'CARD';
+
+export interface OrderDetailInput {
+  productId: number;
+  quantity: number;
+  price: number;
+}
+
+export interface CreateOrderPayload {
+  buyerId: number;
+  sellerId: number;
+  paymentMethod: PaymentMethod;
+  shipping: ShippingInfo;
+  items: OrderDetailInput[];
+}
+
+export interface ShippingInfo {
+  shippingCompanyId: number;
+  recipientName: string;
+  recipientPhone: string;
+  shippingAddress: string;
+  shippingNote?: string;
+}
+
+export interface ShippingCompany {
+  id: number;
+  code: string;
+  name: string;
+  hotline?: string;
+  baseFee: number;
+  insurancePercent: number;
+  codFee: number;
+  estimatedDaysMin: number;
+  estimatedDaysMax: number;
+  supportsCod: boolean;
+}
+
+export interface ShippingQuote {
+  shippingCompanyId: number;
+  shippingCompanyName: string;
+  orderSubtotal: number;
+  shippingFee: number;
+  codAmount: number;
+  estimatedDaysMin: number;
+  estimatedDaysMax: number;
+}
+
+export interface ShipmentResponse {
+  id: number;
+  orderId: number;
+  shippingCompanyId: number;
+  shippingCompanyName: string;
+  recipientName: string;
+  recipientPhone: string;
+  shippingAddress: string;
+  shippingNote?: string;
+  shippingFee: number;
+  codAmount: number;
+  trackingCode: string;
+  status: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface OrderDetailResponse {
+  id: number;
+  productId: number;
+  productTitle: string;
+  quantity: number;
+  price: number;
+  subtotal: number;
+}
+
+export interface OrderResponse {
+  id: number;
+  buyerName: string;
+  sellerName: string;
+  totalPrice: number;
+  orderStatus: string;
+  billStatus: string;
+  paymentMethod: PaymentMethod | string;
+  productTotal: number;
+  shippingFee: number;
+  shipment?: ShipmentResponse;
+  createdAt: string;
+  items: OrderDetailResponse[];
 }
 
 // ==================== Response Normalization ====================
@@ -170,6 +260,57 @@ const MOCK_CATEGORIES: Category[] = [
   { id: 5, name: 'Race Pro' },
 ];
 
+const MOCK_SHIPPING_COMPANIES: ShippingCompany[] = [
+  {
+    id: 1,
+    code: 'DIRECT_HANDOFF',
+    name: 'Seller tự giao / hẹn nhận trực tiếp',
+    hotline: '',
+    baseFee: 0,
+    insurancePercent: 0,
+    codFee: 0,
+    estimatedDaysMin: 0,
+    estimatedDaysMax: 1,
+    supportsCod: true,
+  },
+  {
+    id: 2,
+    code: 'GHTK',
+    name: 'Giao Hàng Tiết Kiệm',
+    hotline: '1900 6092',
+    baseFee: 30000,
+    insurancePercent: 0.0025,
+    codFee: 10000,
+    estimatedDaysMin: 2,
+    estimatedDaysMax: 4,
+    supportsCod: true,
+  },
+  {
+    id: 3,
+    code: 'GHN',
+    name: 'Giao Hàng Nhanh',
+    hotline: '1900 636677',
+    baseFee: 35000,
+    insurancePercent: 0.003,
+    codFee: 12000,
+    estimatedDaysMin: 1,
+    estimatedDaysMax: 3,
+    supportsCod: true,
+  },
+  {
+    id: 4,
+    code: 'VIETTEL_POST',
+    name: 'Viettel Post',
+    hotline: '1900 8095',
+    baseFee: 42000,
+    insurancePercent: 0.0035,
+    codFee: 15000,
+    estimatedDaysMin: 2,
+    estimatedDaysMax: 5,
+    supportsCod: true,
+  },
+];
+
 const BIKE_NAMES = [
   'Pinarello Dogma F 2025 Shimano Ultegra Di2 / Fulcrum Racing 600',
   'Specialized S-Works Tarmac SL8 SRAM Red AXS / Roval Rapide CLX',
@@ -235,6 +376,26 @@ function generateMockProducts(count: number = 20, page: number = 0): Product[] {
   return products;
 }
 
+function calculateMockShippingQuote(
+  company: ShippingCompany,
+  orderSubtotal: number,
+  paymentMethod: PaymentMethod | string
+): ShippingQuote {
+  const isCod = paymentMethod === 'COD';
+  const rawFee = company.baseFee + (orderSubtotal * company.insurancePercent) + (isCod ? company.codFee : 0);
+  const shippingFee = Math.ceil(rawFee / 1000) * 1000;
+
+  return {
+    shippingCompanyId: company.id,
+    shippingCompanyName: company.name,
+    orderSubtotal,
+    shippingFee,
+    codAmount: isCod ? orderSubtotal + shippingFee : 0,
+    estimatedDaysMin: company.estimatedDaysMin,
+    estimatedDaysMax: company.estimatedDaysMax,
+  };
+}
+
 // ==================== API Functions ====================
 
 /**
@@ -262,6 +423,17 @@ async function fetchWithFallback<T>(
     console.warn(`⚡ API unavailable (${url}), using mock data`);
     return mockFn();
   }
+}
+
+async function parseApiResponse<T>(response: Response, fallbackMessage: string): Promise<T> {
+  const json = await response.json().catch(() => null);
+  const rawData = json?.data ?? json;
+
+  if (!response.ok || json?.success === false) {
+    throw new Error(json?.error || json?.message || fallbackMessage);
+  }
+
+  return rawData as T;
 }
 
 // --- Product List ---
@@ -584,6 +756,62 @@ export async function removeFromCart(buyerId: number, productId: number): Promis
     throw new Error(json.error || json.message || 'Xóa sản phẩm khỏi giỏ hàng thất bại');
   }
   window.dispatchEvent(new Event('cart-change'));
+}
+
+export async function clearCart(buyerId: number): Promise<void> {
+  const response = await fetch(`${BASE_URL}/cart/${buyerId}/clear`, {
+    method: 'DELETE',
+  });
+  await parseApiResponse<void>(response, 'Xóa giỏ hàng thất bại');
+  window.dispatchEvent(new Event('cart-change'));
+}
+
+// ==================== Shipping API ====================
+
+export async function fetchShippingCompanies(paymentMethod: PaymentMethod): Promise<ShippingCompany[]> {
+  return fetchWithFallback(
+    `${BASE_URL}/shipping/companies?paymentMethod=${encodeURIComponent(paymentMethod)}`,
+    () => MOCK_SHIPPING_COMPANIES.filter(company => paymentMethod !== 'COD' || company.supportsCod),
+    (data) => Array.isArray(data) ? data as ShippingCompany[] : []
+  );
+}
+
+export async function fetchShippingQuote(
+  shippingCompanyId: number,
+  orderSubtotal: number,
+  paymentMethod: PaymentMethod
+): Promise<ShippingQuote> {
+  return fetchWithFallback(
+    `${BASE_URL}/shipping/quote?shippingCompanyId=${shippingCompanyId}&orderSubtotal=${orderSubtotal}&paymentMethod=${encodeURIComponent(paymentMethod)}`,
+    () => {
+      const company = MOCK_SHIPPING_COMPANIES.find(item => item.id === shippingCompanyId) ?? MOCK_SHIPPING_COMPANIES[0];
+      return calculateMockShippingQuote(company, orderSubtotal, paymentMethod);
+    },
+    (data) => data as ShippingQuote
+  );
+}
+
+// ==================== Order & Payment API ====================
+
+export async function createOrder(payload: CreateOrderPayload): Promise<OrderResponse> {
+  const response = await fetch(`${BASE_URL}/orders`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  return parseApiResponse<OrderResponse>(response, 'Tạo đơn hàng thất bại');
+}
+
+export async function payOrder(orderId: number): Promise<OrderResponse> {
+  const response = await fetch(`${BASE_URL}/orders/${orderId}/pay`, {
+    method: 'PUT',
+  });
+  return parseApiResponse<OrderResponse>(response, 'Thanh toán đơn hàng thất bại');
+}
+
+export async function fetchBuyerOrders(buyerId: number): Promise<OrderResponse[]> {
+  const response = await fetch(`${BASE_URL}/orders/buyer/${buyerId}`);
+  return parseApiResponse<OrderResponse[]>(response, 'Không tải được đơn hàng');
 }
 
 export async function addToWishlist(buyerId: number, productId: number): Promise<void> {

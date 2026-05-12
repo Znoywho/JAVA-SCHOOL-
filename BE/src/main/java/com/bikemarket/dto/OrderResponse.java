@@ -11,6 +11,9 @@ public class OrderResponse {
     private String orderStatus;
     private String billStatus;
     private String paymentMethod;
+    private double productTotal;
+    private double shippingFee;
+    private ShipmentResponse shipment;
     private LocalDateTime createdAt;
     private List<OrderDetailResponse> items;
 
@@ -34,6 +37,15 @@ public class OrderResponse {
 
     public String getPaymentMethod() { return paymentMethod; }
     public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
+
+    public double getProductTotal() { return productTotal; }
+    public void setProductTotal(double productTotal) { this.productTotal = productTotal; }
+
+    public double getShippingFee() { return shippingFee; }
+    public void setShippingFee(double shippingFee) { this.shippingFee = shippingFee; }
+
+    public ShipmentResponse getShipment() { return shipment; }
+    public void setShipment(ShipmentResponse shipment) { this.shipment = shipment; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

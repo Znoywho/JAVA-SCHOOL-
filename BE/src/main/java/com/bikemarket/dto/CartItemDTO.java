@@ -12,6 +12,8 @@ import lombok.NoArgsConstructor;
 public class CartItemDTO {
     private long itemId;
     private long productId;
+    private long sellerId;
+    private String sellerName;
     private String productTitle;
     private double productPrice;
     private int quantity;

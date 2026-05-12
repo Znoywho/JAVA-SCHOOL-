@@ -66,7 +66,22 @@ ON CONFLICT (id) DO NOTHING;
 SELECT setval(pg_get_serial_sequence('category', 'id'), COALESCE(MAX(id), 1)) FROM category;
 
 
--- ==================== 4. PRODUCTS (15 xe đạp) ====================
+-- ==================== 4. SHIPPING COMPANIES ====================
+
+INSERT INTO shipping_company (
+  id, code, name, hotline, base_fee, insurance_percent, cod_fee,
+  estimated_days_min, estimated_days_max, supports_cod, active, created_at, updated_at
+) VALUES
+(1, 'DIRECT_HANDOFF', 'Seller tự giao / hẹn nhận trực tiếp', '', 0, 0, 0, 0, 1, true, true, NOW(), NOW()),
+(2, 'GHTK', 'Giao Hàng Tiết Kiệm', '1900 6092', 30000, 0.0025, 10000, 2, 4, true, true, NOW(), NOW()),
+(3, 'GHN', 'Giao Hàng Nhanh', '1900 636677', 35000, 0.003, 12000, 1, 3, true, true, NOW(), NOW()),
+(4, 'VIETTEL_POST', 'Viettel Post', '1900 8095', 42000, 0.0035, 15000, 2, 5, true, true, NOW(), NOW())
+ON CONFLICT (code) DO NOTHING;
+
+SELECT setval(pg_get_serial_sequence('shipping_company', 'id'), COALESCE(MAX(id), 1)) FROM shipping_company;
+
+
+-- ==================== 5. PRODUCTS (15 xe đạp) ====================
 -- Table: product (id, title, price, total, condition_percent, status, seller_id, brand_id, category_id, created_at, updated_at)
 
 INSERT INTO product (id, title, price, total, condition_percent, status, seller_id, brand_id, category_id, created_at, updated_at) VALUES
@@ -96,7 +111,7 @@ ON CONFLICT (id) DO NOTHING;
 SELECT setval(pg_get_serial_sequence('product', 'id'), COALESCE(MAX(id), 1)) FROM product;
 
 
--- ==================== 5. BIKES (thông số kỹ thuật cho 15 xe) ====================
+-- ==================== 6. BIKES (thông số kỹ thuật cho 15 xe) ====================
 -- Table: bikes (id, frame_size, wheel_size, is_verified, min_rider_height, max_rider_height, max_weight_capacity_kg, weight_kg, color)
 
 INSERT INTO bikes (id, frame_size, wheel_size, is_verified, min_rider_height, max_rider_height, max_weight_capacity_kg, weight_kg, color) VALUES

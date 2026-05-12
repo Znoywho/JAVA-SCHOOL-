@@ -2,7 +2,11 @@ package com.bikemarket.enums;
 
 public enum ShippingStatus {
   PENDING,
-  SHIPPED,
+  AWAITING_PICKUP,
+  PICKED_UP,
+  IN_TRANSIT,
+  OUT_FOR_DELIVERY,
   DELIVERED,
-  CANCELLED
+  CANCELLED,
+  RETURNED
 }
