@@ -2,15 +2,17 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router';
 import {
   Plus, Package, Eye, EyeOff, Trash2, ChevronRight,
-  AlertCircle, CheckCircle, X, Bike, Pencil, ImagePlus
+  AlertCircle, CheckCircle, X, Bike, Pencil, ImagePlus,
+  ClipboardList, Truck, Clock, MapPin, Copy, Check,
+  CheckCircle2, XCircle, Loader2,
 } from 'lucide-react';
 import { getCurrentUser } from '../services/auth';
 import {
   fetchBrands, fetchCategories, createBike, fetchSellerProducts,
   updateProductStatus, deleteProduct, updateProduct, addProductMedia,
-  deleteProductMedia, formatPrice,
+  deleteProductMedia, formatPrice, fetchSellerOrders, updateShippingStatus,
   type Brand, type Category, type Product, type BikeCreateDTO,
-  type ProductUpdateDTO,
+  type ProductUpdateDTO, type OrderResponse,
 } from '../services/api';
 
 const PRODUCT_STATUSES = [
@@ -31,7 +33,7 @@ export function SellerDashboard() {
     }
   }, [user, navigate]);
 
-  const [activeTab, setActiveTab] = useState<'products' | 'create'>('products');
+  const [activeTab, setActiveTab] = useState<'products' | 'create' | 'orders'>('products');
   const [brands, setBrands] = useState<Brand[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -44,6 +46,11 @@ export function SellerDashboard() {
     mediaType: 'IMAGE',
     thumbnail: false,
   });
+  const [sellerOrders, setSellerOrders] = useState<OrderResponse[]>([]);
+  const [ordersLoading, setOrdersLoading] = useState(false);
+  const [orderFilter, setOrderFilter] = useState<string>('ALL');
+  const [updatingShipmentId, setUpdatingShipmentId] = useState<number | null>(null);
+  const [copiedTrackingOrderId, setCopiedTrackingOrderId] = useState<number | null>(null);
 
   // Form state
   const [form, setForm] = useState<Partial<BikeCreateDTO>>({
@@ -75,7 +82,10 @@ export function SellerDashboard() {
   }, []);
 
   useEffect(() => {
-    if (user) loadProducts();
+    if (user) {
+      loadProducts();
+      loadSellerOrders();
+    }
   }, [user?.id]);
 
   const loadProducts = async () => {
@@ -95,6 +105,72 @@ export function SellerDashboard() {
     setMessage({ type, text });
     setTimeout(() => setMessage(null), 4000);
   };
+
+  const loadSellerOrders = async () => {
+    if (!user) return;
+    setOrdersLoading(true);
+    try {
+      const data = await fetchSellerOrders(user.id);
+      setSellerOrders(data.sort((a: OrderResponse, b: OrderResponse) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+    } catch {
+      // fallback
+    } finally {
+      setOrdersLoading(false);
+    }
+  };
+
+  const handleUpdateShippingStatus = async (shipmentId: number, newStatus: string) => {
+    setUpdatingShipmentId(shipmentId);
+    try {
+      await updateShippingStatus(shipmentId, newStatus);
+      showMessage('success', 'Cập nhật trạng thái giao hàng thành công');
+      await loadSellerOrders();
+    } catch (err: any) {
+      showMessage('error', err.message || 'Cập nhật thất bại');
+    } finally {
+      setUpdatingShipmentId(null);
+    }
+  };
+
+  const handleCopyTrackingCode = (orderId: number, trackingCode: string) => {
+    navigator.clipboard.writeText(trackingCode);
+    setCopiedTrackingOrderId(orderId);
+    setTimeout(() => setCopiedTrackingOrderId(null), 2000);
+  };
+
+  const getNextShippingAction = (status: string): { label: string; nextStatus: string; color: string } | null => {
+    switch (status) {
+      case 'PENDING':          return { label: 'Xác nhận & chuẩn bị',  nextStatus: 'AWAITING_PICKUP',  color: 'bg-amber-500 hover:bg-amber-600' };
+      case 'AWAITING_PICKUP':  return { label: 'Đã lấy hàng',          nextStatus: 'PICKED_UP',        color: 'bg-blue-500 hover:bg-blue-600' };
+      case 'PICKED_UP':        return { label: 'Đang vận chuyển',      nextStatus: 'IN_TRANSIT',       color: 'bg-indigo-500 hover:bg-indigo-600' };
+      case 'IN_TRANSIT':       return { label: 'Đang giao',            nextStatus: 'OUT_FOR_DELIVERY', color: 'bg-violet-500 hover:bg-violet-600' };
+      case 'OUT_FOR_DELIVERY': return { label: 'Xác nhận đã giao',     nextStatus: 'DELIVERED',        color: 'bg-emerald-500 hover:bg-emerald-600' };
+      default: return null;
+    }
+  };
+
+  const SELLER_ORDER_FILTERS = [
+    { value: 'ALL',       label: 'Tất cả' },
+    { value: 'PENDING',   label: 'Chờ xác nhận' },
+    { value: 'SHIPPING',  label: 'Đang giao' },
+    { value: 'DELIVERED', label: 'Đã giao' },
+    { value: 'CANCELLED', label: 'Đã hủy' },
+  ];
+
+  const SHIPPING_STATUS_LABELS: Record<string, { label: string; color: string }> = {
+    PENDING:          { label: 'Chờ xử lý',          color: 'text-amber-600' },
+    AWAITING_PICKUP:  { label: 'Chờ shipper lấy',    color: 'text-orange-600' },
+    PICKED_UP:        { label: 'Đã lấy hàng',       color: 'text-blue-600' },
+    IN_TRANSIT:       { label: 'Đang vận chuyển',    color: 'text-indigo-600' },
+    OUT_FOR_DELIVERY: { label: 'Đang giao',          color: 'text-violet-600' },
+    DELIVERED:        { label: 'Đã giao thành công', color: 'text-emerald-600' },
+    CANCELLED:        { label: 'Đã hủy',             color: 'text-red-600' },
+    RETURNED:         { label: 'Hoàn trả',           color: 'text-gray-600' },
+  };
+
+  const filteredSellerOrders = orderFilter === 'ALL'
+    ? sellerOrders
+    : sellerOrders.filter(o => o.orderStatus === orderFilter);
 
   // Form handlers
   const updateForm = (field: string, value: any) => {
@@ -316,10 +392,10 @@ export function SellerDashboard() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-6">
+        <div className="flex gap-2 mb-6 overflow-x-auto pb-1">
           <button
             onClick={() => setActiveTab('products')}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium text-sm transition-all ${
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium text-sm transition-all whitespace-nowrap ${
               activeTab === 'products'
                 ? 'bg-gray-900 text-white shadow-lg'
                 : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
@@ -329,8 +405,24 @@ export function SellerDashboard() {
             Sản phẩm của tôi
           </button>
           <button
+            onClick={() => { setActiveTab('orders'); loadSellerOrders(); }}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium text-sm transition-all whitespace-nowrap ${
+              activeTab === 'orders'
+                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/25'
+                : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+            }`}
+          >
+            <ClipboardList size={18} />
+            Đơn hàng
+            {sellerOrders.filter(o => o.orderStatus === 'PENDING').length > 0 && (
+              <span className="ml-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                {sellerOrders.filter(o => o.orderStatus === 'PENDING').length}
+              </span>
+            )}
+          </button>
+          <button
             onClick={() => setActiveTab('create')}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium text-sm transition-all ${
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium text-sm transition-all whitespace-nowrap ${
               activeTab === 'create'
                 ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25'
                 : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
@@ -638,6 +730,188 @@ export function SellerDashboard() {
               </div>
             )}
           </div>
+          </div>
+        ) : activeTab === 'orders' ? (
+          /* ===== SELLER ORDERS ===== */
+          <div className="space-y-4">
+            {/* Order Filters */}
+            <div className="flex gap-1.5 overflow-x-auto pb-1">
+              {SELLER_ORDER_FILTERS.map(filter => (
+                <button
+                  key={filter.value}
+                  onClick={() => setOrderFilter(filter.value)}
+                  className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                    orderFilter === filter.value
+                      ? 'bg-indigo-600 text-white shadow-sm'
+                      : 'bg-white text-gray-600 border border-gray-200 hover:border-indigo-300 hover:text-indigo-600'
+                  }`}
+                >
+                  {filter.label}
+                  {filter.value !== 'ALL' && (
+                    <span className="ml-1.5 opacity-70">
+                      ({sellerOrders.filter(o => o.orderStatus === filter.value).length})
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+
+            {ordersLoading ? (
+              <div className="bg-white rounded-xl border border-gray-100 p-16 text-center">
+                <Loader2 size={32} className="animate-spin text-indigo-500 mx-auto mb-3" />
+                <p className="text-gray-500">Đang tải đơn hàng...</p>
+              </div>
+            ) : filteredSellerOrders.length === 0 ? (
+              <div className="bg-white rounded-xl border border-gray-100 p-16 text-center">
+                <ClipboardList size={40} className="text-gray-200 mx-auto mb-3" />
+                <p className="text-gray-500">
+                  {orderFilter === 'ALL' ? 'Chưa có đơn hàng nào' : `Không có đơn "${SELLER_ORDER_FILTERS.find(f => f.value === orderFilter)?.label}"`}
+                </p>
+              </div>
+            ) : (
+              filteredSellerOrders.map(order => {
+                const shipment = order.shipment;
+                const shippingStatus = shipment ? SHIPPING_STATUS_LABELS[shipment.status] : null;
+                const nextAction = shipment ? getNextShippingAction(shipment.status) : null;
+                const isUpdating = shipment && updatingShipmentId === shipment.id;
+
+                return (
+                  <div key={order.id} className="bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
+                    {/* Order header */}
+                    <div className="px-5 py-3.5 border-b border-gray-50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 bg-gray-50/50">
+                      <div className="flex items-center gap-3">
+                        <span className="text-sm font-bold text-gray-900">Đơn #{order.id}</span>
+                        <span className="text-xs text-gray-400">·</span>
+                        <span className="text-xs text-gray-500">
+                          {new Date(order.createdAt).toLocaleDateString('vi-VN', {
+                            day: '2-digit', month: '2-digit', year: 'numeric',
+                            hour: '2-digit', minute: '2-digit',
+                          })}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${
+                          order.orderStatus === 'PENDING'   ? 'bg-amber-50 border-amber-200 text-amber-700' :
+                          order.orderStatus === 'CONFIRMED' ? 'bg-blue-50 border-blue-200 text-blue-700' :
+                          order.orderStatus === 'SHIPPING'  ? 'bg-indigo-50 border-indigo-200 text-indigo-700' :
+                          order.orderStatus === 'DELIVERED' ? 'bg-emerald-50 border-emerald-200 text-emerald-700' :
+                          'bg-red-50 border-red-200 text-red-700'
+                        }`}>
+                          {order.orderStatus === 'PENDING' ? 'Chờ xác nhận' :
+                           order.orderStatus === 'CONFIRMED' ? 'Đã xác nhận' :
+                           order.orderStatus === 'SHIPPING' ? 'Đang giao' :
+                           order.orderStatus === 'DELIVERED' ? 'Đã giao' : 'Đã hủy'}
+                        </span>
+                        <span className={`text-xs font-medium ${
+                          order.billStatus === 'PAID' ? 'text-emerald-600' :
+                          order.billStatus === 'CANCELLED' ? 'text-red-500' : 'text-amber-600'
+                        }`}>
+                          {order.billStatus === 'PAID' ? '✓ Đã thanh toán' :
+                           order.billStatus === 'CANCELLED' ? 'Đã hủy' : 'Chờ thanh toán'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Order body */}
+                    <div className="p-5">
+                      {/* Buyer info */}
+                      <div className="text-sm text-gray-600 mb-3">
+                        Buyer: <span className="font-semibold text-gray-900">{order.buyerName}</span>
+                        <span className="mx-2 text-gray-300">|</span>
+                        Thanh toán: <span className="font-medium">{order.paymentMethod}</span>
+                      </div>
+
+                      {/* Items */}
+                      <div className="space-y-1.5 mb-4">
+                        {order.items.map(item => (
+                          <div key={item.id} className="flex items-center justify-between text-sm">
+                            <span className="text-gray-700 truncate mr-3 flex-1">{item.productTitle}</span>
+                            <span className="text-gray-500 whitespace-nowrap">x{item.quantity} · {formatPrice(item.subtotal)}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Shipping info */}
+                      {shipment && (
+                        <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                            <div className="flex items-center gap-2 text-sm">
+                              <Truck size={15} className="text-gray-400" />
+                              <span className="text-gray-600">{shipment.shippingCompanyName}</span>
+                              {shippingStatus && (
+                                <>
+                                  <span className="text-gray-300">·</span>
+                                  <span className={`font-semibold ${shippingStatus.color}`}>{shippingStatus.label}</span>
+                                </>
+                              )}
+                            </div>
+                            {shipment.trackingCode && (
+                              <button
+                                onClick={() => handleCopyTrackingCode(order.id, shipment.trackingCode)}
+                                className="inline-flex items-center gap-1.5 text-xs font-mono text-blue-600 bg-blue-50 px-2.5 py-1 rounded-md hover:text-blue-700"
+                              >
+                                {copiedTrackingOrderId === order.id ? (
+                                  <><Check size={12} /> Đã copy</>
+                                ) : (
+                                  <><Copy size={12} /> {shipment.trackingCode}</>
+                                )}
+                              </button>
+                            )}
+                          </div>
+
+                          {/* Recipient info */}
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs text-gray-500">
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-medium text-gray-700">{shipment.recipientName}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <span>{shipment.recipientPhone}</span>
+                            </div>
+                            <div className="flex items-start gap-1.5 sm:col-span-1">
+                              <MapPin size={12} className="mt-0.5 shrink-0" />
+                              <span className="line-clamp-2">{shipment.shippingAddress}</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Footer with total and action button */}
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-gray-100">
+                        <div className="text-sm">
+                          <span className="text-gray-500">Ship: {formatPrice(order.shippingFee)}</span>
+                          <span className="mx-2 text-gray-300">|</span>
+                          <span className="text-lg font-bold text-red-600">{formatPrice(order.totalPrice)}</span>
+                        </div>
+                        <div className="flex gap-2">
+                          {nextAction && shipment && (
+                            <button
+                              onClick={() => handleUpdateShippingStatus(shipment.id, nextAction.nextStatus)}
+                              disabled={!!isUpdating}
+                              className={`px-4 py-2 text-xs font-semibold text-white rounded-lg transition-colors disabled:opacity-50 flex items-center gap-1.5 ${nextAction.color}`}
+                            >
+                              {isUpdating ? (
+                                <><Loader2 size={13} className="animate-spin" /> Đang cập nhật...</>
+                              ) : (
+                                <><Truck size={13} /> {nextAction.label}</>
+                              )}
+                            </button>
+                          )}
+                          {shipment && shipment.status !== 'CANCELLED' && shipment.status !== 'DELIVERED' && (
+                            <button
+                              onClick={() => handleUpdateShippingStatus(shipment.id, 'CANCELLED')}
+                              disabled={!!isUpdating}
+                              className="px-3 py-2 text-xs font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50 disabled:opacity-50"
+                            >
+                              Hủy giao
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
           </div>
         ) : (
           /* ===== CREATE FORM ===== */

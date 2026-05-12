@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router';
-import { Search, Heart, ShoppingCart, User, ChevronDown, Package, LogOut } from 'lucide-react';
+import { Search, Heart, ShoppingCart, User, ChevronDown, Package, LogOut, ClipboardList } from 'lucide-react';
 import { getCurrentUser, logout, type AuthUser } from '../services/auth';
 import { fetchCartCount, fetchWishlistCount } from '../services/api';
 
@@ -59,6 +59,16 @@ function AuthSection() {
               >
                 <Package size={16} />
                 Quản lý gian hàng
+              </Link>
+            )}
+            {user.role === 'BUYER' && (
+              <Link 
+                to="/orders" 
+                onClick={() => setShowDropdown(false)}
+                className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 rounded-lg text-sm text-gray-700 transition-colors"
+              >
+                <ClipboardList size={16} />
+                Đơn hàng của tôi
               </Link>
             )}
             <button 

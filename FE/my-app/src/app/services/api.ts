@@ -860,6 +860,39 @@ export async function fetchWishlistCount(buyerId: number): Promise<number> {
   );
 }
 
+// ==================== Order Management API ====================
+
+export async function fetchOrderById(orderId: number): Promise<OrderResponse> {
+  const response = await fetch(`${BASE_URL}/orders/${orderId}`);
+  return parseApiResponse<OrderResponse>(response, 'Không tải được đơn hàng');
+}
+
+export async function fetchSellerOrders(sellerId: number): Promise<OrderResponse[]> {
+  const response = await fetch(`${BASE_URL}/orders/seller/${sellerId}`);
+  return parseApiResponse<OrderResponse[]>(response, 'Không tải được đơn hàng');
+}
+
+export async function cancelOrder(orderId: number): Promise<void> {
+  const response = await fetch(`${BASE_URL}/orders/${orderId}/cancel`, {
+    method: 'PUT',
+  });
+  await parseApiResponse<void>(response, 'Hủy đơn hàng thất bại');
+}
+
+export async function updateOrderStatus(orderId: number, status: string): Promise<OrderResponse> {
+  const response = await fetch(`${BASE_URL}/orders/${orderId}/status?status=${encodeURIComponent(status)}`, {
+    method: 'PUT',
+  });
+  return parseApiResponse<OrderResponse>(response, 'Cập nhật trạng thái đơn hàng thất bại');
+}
+
+export async function updateShippingStatus(shipmentId: number, status: string): Promise<ShipmentResponse> {
+  const response = await fetch(`${BASE_URL}/shipping/${shipmentId}/status?status=${encodeURIComponent(status)}`, {
+    method: 'PATCH',
+  });
+  return parseApiResponse<ShipmentResponse>(response, 'Cập nhật trạng thái giao hàng thất bại');
+}
+
 // ==================== Utilities ====================
 
 export function formatPrice(price: number): string {

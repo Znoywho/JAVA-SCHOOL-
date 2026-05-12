@@ -13,6 +13,8 @@ import { LoginPage } from './components/LoginPage';
 import { SellerDashboard } from './components/SellerDashboard';
 import { CartPage } from './components/CartPage';
 import { WishlistPage } from './components/WishlistPage';
+import { MyOrdersPage } from './components/MyOrdersPage';
+import { OrderDetailPage } from './components/OrderDetailPage';
 
 function HomePage() {
   return (
@@ -38,6 +40,8 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/cart" element={<CartPage />} />
         <Route path="/wishlist" element={<WishlistPage />} />
+        <Route path="/orders" element={<MyOrdersPage />} />
+        <Route path="/orders/:id" element={<OrderDetailPage />} />
         <Route path="/seller/dashboard" element={<SellerDashboard />} />
       </Routes>
       <Footer />
