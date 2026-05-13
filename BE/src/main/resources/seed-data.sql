@@ -134,8 +134,26 @@ INSERT INTO bikes (id, frame_size, wheel_size, is_verified, min_rider_height, ma
 ON CONFLICT (id) DO NOTHING;
 
 
+-- ==================== 7. PRODUCT REVIEWS (đánh giá sản phẩm) ====================
+-- Mỗi buyer chỉ đánh giá 1 lần cho 1 sản phẩm
+-- Table: product_reviews (id, buyer_id, product_id, order_id, rating, comment, created_at, updated_at)
+
+INSERT INTO product_reviews (id, buyer_id, product_id, order_id, rating, comment, created_at, updated_at) VALUES
+(1, 6, 1,  NULL, 'FIVE_STAR',  'Xe đúng mô tả, khung rất đẹp và sang số mượt. Đóng gói cẩn thận.', NOW() - INTERVAL '8 days', NOW() - INTERVAL '8 days'),
+(2, 7, 2,  NULL, 'FOUR_STAR',  'Xe chạy ổn, phù hợp đi gravel. Có vài vết xước nhỏ như shop đã báo.', NOW() - INTERVAL '7 days', NOW() - INTERVAL '7 days'),
+(3, 8, 3,  NULL, 'FOUR_STAR',  'Madone rất nhanh, bánh còn tốt. Giao hàng hơi lâu nhưng sản phẩm đáng tiền.', NOW() - INTERVAL '6 days', NOW() - INTERVAL '6 days'),
+(4, 6, 5,  NULL, 'FIVE_STAR',  'Tình trạng gần như mới, màu UAE nhìn ngoài đẹp hơn ảnh.', NOW() - INTERVAL '5 days', NOW() - INTERVAL '5 days'),
+(5, 7, 8,  NULL, 'FIVE_STAR',  'Oltre RC nhẹ và hoàn thiện cao, shop tư vấn size chuẩn.', NOW() - INTERVAL '4 days', NOW() - INTERVAL '4 days'),
+(6, 8, 10, NULL, 'FOUR_STAR',  'Cervélo S5 đẹp, phanh và truyền động ổn. Nên thay bọc ghi đông.', NOW() - INTERVAL '3 days', NOW() - INTERVAL '3 days'),
+(7, 6, 12, NULL, 'FIVE_STAR',  'Scott Addict RC rất nhẹ, leo dốc tốt, đúng điểm kiểm định.', NOW() - INTERVAL '2 days', NOW() - INTERVAL '2 days'),
+(8, 7, 14, NULL, 'FIVE_STAR',  'E-bike mạnh, pin còn tốt, chạy thử rất êm.', NOW() - INTERVAL '1 day', NOW() - INTERVAL '1 day')
+ON CONFLICT (buyer_id, product_id) DO NOTHING;
+
+SELECT setval(pg_get_serial_sequence('product_reviews', 'id'), COALESCE(MAX(id), 1)) FROM product_reviews;
+
+
 -- ==================== DONE ====================
--- Tổng: 10 users, 10 brands, 5 categories, 15 products/bikes
+-- Tổng: 10 users, 10 brands, 5 categories, 15 products/bikes, 8 product reviews
 -- 
 -- Users theo role:
 --   ADMIN:     2 (id 1-2)

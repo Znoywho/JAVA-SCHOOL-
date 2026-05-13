@@ -202,6 +202,40 @@ export interface OrderResponse {
   items: OrderDetailResponse[];
 }
 
+export type ReviewRating = 'ONE_STAR' | 'TWO_STAR' | 'THREE_STAR' | 'FOUR_STAR' | 'FIVE_STAR';
+
+export interface ProductReview {
+  id: number;
+  buyerId: number;
+  buyerName: string;
+  productId: number;
+  productTitle: string;
+  orderId?: number | null;
+  rating: ReviewRating;
+  ratingValue: number;
+  comment?: string | null;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface ProductRatingStats {
+  productId: number;
+  productTitle?: string;
+  averageRating: number;
+  totalReviews: number;
+  fiveStarCount: number;
+  fourStarCount: number;
+  threeStarCount: number;
+  twoStarCount: number;
+  oneStarCount: number;
+}
+
+export interface ProductReviewPayload {
+  rating: ReviewRating;
+  comment: string;
+  orderId?: number | null;
+}
+
 // ==================== Response Normalization ====================
 
 /**
@@ -263,6 +297,63 @@ function normalizeProductMedia(raw: any): ProductMedia {
     mediaUrl: raw.mediaUrl ?? raw.media_url ?? '',
     mediaType: raw.mediaType ?? raw.media_type ?? 'IMAGE',
     thumbnail: thumbnailValue === true || thumbnailValue === 'true',
+  };
+}
+
+function ratingToValue(rating: ReviewRating | string | undefined): number {
+  switch (rating) {
+    case 'FIVE_STAR':
+      return 5;
+    case 'FOUR_STAR':
+      return 4;
+    case 'THREE_STAR':
+      return 3;
+    case 'TWO_STAR':
+      return 2;
+    case 'ONE_STAR':
+      return 1;
+    default:
+      return 0;
+  }
+}
+
+export function valueToReviewRating(value: number): ReviewRating {
+  if (value >= 5) return 'FIVE_STAR';
+  if (value === 4) return 'FOUR_STAR';
+  if (value === 3) return 'THREE_STAR';
+  if (value === 2) return 'TWO_STAR';
+  return 'ONE_STAR';
+}
+
+function normalizeProductReview(raw: any): ProductReview {
+  const rating = (raw.rating ?? 'ONE_STAR') as ReviewRating;
+
+  return {
+    id: raw.id ?? raw.Id ?? 0,
+    buyerId: raw.buyerId ?? raw.buyer?.id ?? raw.buyer?.Id ?? 0,
+    buyerName: raw.buyerName ?? raw.buyer?.name ?? 'Buyer',
+    productId: raw.productId ?? raw.product?.id ?? raw.product?.Id ?? 0,
+    productTitle: raw.productTitle ?? raw.product?.title ?? raw.product?.Title ?? '',
+    orderId: raw.orderId ?? raw.order?.id ?? raw.order?.Id ?? null,
+    rating,
+    ratingValue: raw.ratingValue ?? ratingToValue(rating),
+    comment: raw.comment ?? '',
+    createdAt: raw.createdAt ?? raw.created_at ?? new Date().toISOString(),
+    updatedAt: raw.updatedAt ?? raw.updated_at ?? undefined,
+  };
+}
+
+function normalizeProductRatingStats(raw: any): ProductRatingStats {
+  return {
+    productId: raw.productId ?? 0,
+    productTitle: raw.productTitle ?? undefined,
+    averageRating: Number(raw.averageRating ?? 0),
+    totalReviews: Number(raw.totalReviews ?? 0),
+    fiveStarCount: Number(raw.fiveStarCount ?? 0),
+    fourStarCount: Number(raw.fourStarCount ?? 0),
+    threeStarCount: Number(raw.threeStarCount ?? 0),
+    twoStarCount: Number(raw.twoStarCount ?? 0),
+    oneStarCount: Number(raw.oneStarCount ?? 0),
   };
 }
 
@@ -348,6 +439,50 @@ const MOCK_SHIPPING_COMPANIES: ShippingCompany[] = [
     supportsCod: true,
   },
 ];
+
+const MOCK_PRODUCT_REVIEWS: ProductReview[] = [
+  {
+    id: 1,
+    buyerId: 6,
+    buyerName: 'Nguyễn Thị Hoa',
+    productId: 1,
+    productTitle: 'Pinarello Dogma F 2025 Shimano Ultegra Di2 / Fulcrum Racing 600',
+    rating: 'FIVE_STAR',
+    ratingValue: 5,
+    comment: 'Xe đúng mô tả, khung rất đẹp và sang số mượt.',
+    createdAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    id: 2,
+    buyerId: 7,
+    buyerName: 'Trần Văn Nam',
+    productId: 1,
+    productTitle: 'Pinarello Dogma F 2025 Shimano Ultegra Di2 / Fulcrum Racing 600',
+    rating: 'FOUR_STAR',
+    ratingValue: 4,
+    comment: 'Sản phẩm ổn, shop tư vấn nhanh. Có vài vết xước nhỏ.',
+    createdAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+  },
+];
+
+function calculateMockReviewStats(productId: number): ProductRatingStats {
+  const reviews = MOCK_PRODUCT_REVIEWS.filter(review => review.productId === productId);
+  const totalReviews = reviews.length;
+  const averageRating = totalReviews === 0
+    ? 0
+    : reviews.reduce((sum, review) => sum + review.ratingValue, 0) / totalReviews;
+
+  return {
+    productId,
+    averageRating,
+    totalReviews,
+    fiveStarCount: reviews.filter(review => review.ratingValue === 5).length,
+    fourStarCount: reviews.filter(review => review.ratingValue === 4).length,
+    threeStarCount: reviews.filter(review => review.ratingValue === 3).length,
+    twoStarCount: reviews.filter(review => review.ratingValue === 2).length,
+    oneStarCount: reviews.filter(review => review.ratingValue === 1).length,
+  };
+}
 
 const BIKE_NAMES = [
   'Pinarello Dogma F 2025 Shimano Ultegra Di2 / Fulcrum Racing 600',
@@ -519,6 +654,50 @@ export async function fetchProductById(id: number): Promise<Product> {
     },
     normalizeProduct
   );
+}
+
+// --- Product Reviews ---
+export async function fetchProductReviews(productId: number): Promise<ProductReview[]> {
+  return fetchWithFallback(
+    `${BASE_URL}/product-reviews/product/${productId}`,
+    () => MOCK_PRODUCT_REVIEWS.filter(review => review.productId === productId),
+    (data) => Array.isArray(data) ? data.map(normalizeProductReview) : []
+  );
+}
+
+export async function fetchProductRatingStats(productId: number): Promise<ProductRatingStats> {
+  return fetchWithFallback(
+    `${BASE_URL}/product-reviews/product/${productId}/stats`,
+    () => calculateMockReviewStats(productId),
+    normalizeProductRatingStats
+  );
+}
+
+export async function createProductReview(
+  buyerId: number,
+  productId: number,
+  payload: ProductReviewPayload
+): Promise<ProductReview> {
+  const response = await fetch(`${BASE_URL}/product-reviews/${buyerId}/${productId}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  const data = await parseApiResponse<any>(response, 'Tạo đánh giá sản phẩm thất bại');
+  return normalizeProductReview(data);
+}
+
+export async function updateProductReview(
+  reviewId: number,
+  payload: ProductReviewPayload
+): Promise<ProductReview> {
+  const response = await fetch(`${BASE_URL}/product-reviews/${reviewId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  const data = await parseApiResponse<any>(response, 'Cập nhật đánh giá sản phẩm thất bại');
+  return normalizeProductReview(data);
 }
 
 // --- Search ---
