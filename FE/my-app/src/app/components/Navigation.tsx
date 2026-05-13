@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router';
-import { Search, Heart, ShoppingCart, User, ChevronDown, Package, LogOut, ClipboardList } from 'lucide-react';
+import { Search, Heart, ShoppingCart, User, ChevronDown, Package, LogOut, ClipboardList, MessageCircle } from 'lucide-react';
 import { getCurrentUser, logout, type AuthUser } from '../services/auth';
 import { fetchCartCount, fetchWishlistCount } from '../services/api';
 
@@ -81,6 +81,14 @@ function AuthSection() {
                 Bao cao kiem dinh
               </Link>
             )}
+            <Link
+              to="/chat"
+              onClick={() => setShowDropdown(false)}
+              className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 rounded-lg text-sm text-gray-700 transition-colors"
+            >
+              <MessageCircle size={16} />
+              Tin nhan
+            </Link>
             <button 
               onClick={handleLogout}
               className="w-full flex items-center gap-2 px-3 py-2 hover:bg-red-50 rounded-lg text-sm text-red-600 transition-colors"
@@ -191,6 +199,9 @@ export function Navigation() {
 
           {/* Icons */}
           <div className="flex items-center gap-2">
+            <Link to="/chat" className="p-2.5 hover:bg-gray-100 rounded-xl transition-colors relative group" title="Tin nhan">
+              <MessageCircle size={22} className="text-gray-700" />
+            </Link>
             <Link to="/wishlist" className="p-2.5 hover:bg-gray-100 rounded-xl transition-colors relative group">
               <Heart size={22} className="text-gray-700" />
               <span className={`absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-4.5 h-4.5 px-1 flex items-center justify-center ${wishlistCount === 0 ? 'opacity-0 group-hover:opacity-100' : ''} transition-opacity`}>

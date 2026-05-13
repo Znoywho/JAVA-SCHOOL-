@@ -2,6 +2,7 @@ package com.bikemarket.service;
 
 import com.bikemarket.entity.Conversation;
 import com.bikemarket.entity.User;
+import com.bikemarket.enums.Role;
 import com.bikemarket.exception.ResourceNotFoundException;
 import com.bikemarket.repository.IConversationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,10 @@ public class ConversationService implements IConversationService {
 
     @Override
     public Conversation createConversation(long userId1, long userId2) {
+        if (userId1 == userId2) {
+            throw new IllegalArgumentException("Cannot create a conversation with the same user");
+        }
+
         User user1 = userService.findUserById(userId1);
         if (user1 == null) {
             throw new ResourceNotFoundException("User not found with id: " + userId1);
@@ -32,6 +37,10 @@ public class ConversationService implements IConversationService {
         User user2 = userService.findUserById(userId2);
         if (user2 == null) {
             throw new ResourceNotFoundException("User not found with id: " + userId2);
+        }
+
+        if (!isAllowedChatPair(user1.getRole(), user2.getRole())) {
+            throw new IllegalArgumentException("Chat is only available between buyer-seller or buyer-inspector");
         }
 
         // Check if conversation already exists
@@ -60,7 +69,7 @@ public class ConversationService implements IConversationService {
 
     @Override
     public Conversation getConversationById(long conversationId) {
-        return conversationRepository.findById(conversationId)
+        return conversationRepository.findDetailedById(conversationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Conversation not found with id: " + conversationId));
     }
 
@@ -68,5 +77,10 @@ public class ConversationService implements IConversationService {
     public void deleteConversation(long conversationId) {
         Conversation conversation = getConversationById(conversationId);
         conversationRepository.delete(conversation);
+    }
+
+    private boolean isAllowedChatPair(Role role1, Role role2) {
+        return (role1 == Role.BUYER && (role2 == Role.SELLER || role2 == Role.INSPECTOR))
+                || (role2 == Role.BUYER && (role1 == Role.SELLER || role1 == Role.INSPECTOR));
     }
 }

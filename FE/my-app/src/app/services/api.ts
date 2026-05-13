@@ -189,7 +189,9 @@ export interface OrderDetailResponse {
 
 export interface OrderResponse {
   id: number;
+  buyerId: number;
   buyerName: string;
+  sellerId: number;
   sellerName: string;
   totalPrice: number;
   orderStatus: string;
@@ -200,6 +202,40 @@ export interface OrderResponse {
   shipment?: ShipmentResponse;
   createdAt: string;
   items: OrderDetailResponse[];
+}
+
+export type ChatRole = 'BUYER' | 'SELLER' | 'INSPECTOR' | 'ADMIN';
+
+export interface ChatContact {
+  id: number;
+  name: string;
+  email?: string;
+  phone?: string;
+  role: ChatRole;
+}
+
+export interface ChatMessage {
+  id: number;
+  conversationId: number;
+  senderId: number;
+  senderName: string;
+  content: string;
+  createdAt: string;
+}
+
+export interface ChatConversation {
+  id: number;
+  userId1: number;
+  user1Name: string;
+  user1Role?: ChatRole;
+  userId2: number;
+  user2Name: string;
+  user2Role?: ChatRole;
+  messageCount: number;
+  lastMessageTime?: string;
+  lastMessage?: string | null;
+  lastMessageSenderId?: number | null;
+  messages?: ChatMessage[];
 }
 
 export type ReviewRating = 'ONE_STAR' | 'TWO_STAR' | 'THREE_STAR' | 'FOUR_STAR' | 'FIVE_STAR';
@@ -354,6 +390,44 @@ function normalizeProductRatingStats(raw: any): ProductRatingStats {
     threeStarCount: Number(raw.threeStarCount ?? 0),
     twoStarCount: Number(raw.twoStarCount ?? 0),
     oneStarCount: Number(raw.oneStarCount ?? 0),
+  };
+}
+
+function normalizeChatContact(raw: any): ChatContact {
+  return {
+    id: raw.id ?? raw.Id ?? 0,
+    name: raw.name ?? raw.Name ?? 'User',
+    email: raw.email ?? raw.Email ?? undefined,
+    phone: raw.phone ?? raw.Phone ?? undefined,
+    role: (raw.role ?? raw.Role ?? 'BUYER') as ChatRole,
+  };
+}
+
+function normalizeChatMessage(raw: any): ChatMessage {
+  return {
+    id: raw.id ?? raw.Id ?? 0,
+    conversationId: raw.conversationId ?? raw.ConversationId ?? 0,
+    senderId: raw.senderId ?? raw.SenderId ?? 0,
+    senderName: raw.senderName ?? raw.sender?.name ?? raw.SenderId?.name ?? 'User',
+    content: raw.content ?? '',
+    createdAt: raw.createdAt ?? raw.created_at ?? new Date().toISOString(),
+  };
+}
+
+function normalizeChatConversation(raw: any): ChatConversation {
+  return {
+    id: raw.id ?? raw.Id ?? 0,
+    userId1: raw.userId1 ?? raw.UserId1 ?? 0,
+    user1Name: raw.user1Name ?? raw.user?.name ?? raw.UserId1?.name ?? 'User',
+    user1Role: raw.user1Role ?? raw.user?.role ?? raw.UserId1?.role ?? undefined,
+    userId2: raw.userId2 ?? raw.UserId2 ?? 0,
+    user2Name: raw.user2Name ?? raw.user2?.name ?? raw.UserId2?.name ?? 'User',
+    user2Role: raw.user2Role ?? raw.user2?.role ?? raw.UserId2?.role ?? undefined,
+    messageCount: Number(raw.messageCount ?? 0),
+    lastMessageTime: raw.lastMessageTime ?? raw.updatedAt ?? raw.createdAt ?? undefined,
+    lastMessage: raw.lastMessage ?? null,
+    lastMessageSenderId: raw.lastMessageSenderId ?? null,
+    messages: Array.isArray(raw.messages) ? raw.messages.map(normalizeChatMessage) : undefined,
   };
 }
 
@@ -607,6 +681,47 @@ async function parseApiResponse<T>(response: Response, fallbackMessage: string):
   }
 
   return rawData as T;
+}
+
+// --- Chat ---
+export async function fetchChatContacts(userId: number): Promise<ChatContact[]> {
+  const response = await fetch(`${BASE_URL}/chat/contacts/${userId}`);
+  const data = await parseApiResponse<any[]>(response, 'Khong tai duoc danh ba chat');
+  return Array.isArray(data) ? data.map(normalizeChatContact) : [];
+}
+
+export async function fetchChatConversations(userId: number): Promise<ChatConversation[]> {
+  const response = await fetch(`${BASE_URL}/chat/conversations/${userId}`);
+  const data = await parseApiResponse<any[]>(response, 'Khong tai duoc hoi thoai');
+  return Array.isArray(data) ? data.map(normalizeChatConversation) : [];
+}
+
+export async function createChatConversation(userId1: number, userId2: number): Promise<ChatConversation> {
+  const response = await fetch(`${BASE_URL}/chat/conversation/${userId1}/${userId2}`, {
+    method: 'POST',
+  });
+  const data = await parseApiResponse<any>(response, 'Khong tao duoc hoi thoai');
+  return normalizeChatConversation(data);
+}
+
+export async function fetchChatMessages(conversationId: number): Promise<ChatMessage[]> {
+  const response = await fetch(`${BASE_URL}/chat/${conversationId}/messages`);
+  const data = await parseApiResponse<any[]>(response, 'Khong tai duoc tin nhan');
+  return Array.isArray(data) ? data.map(normalizeChatMessage) : [];
+}
+
+export async function sendChatMessage(
+  conversationId: number,
+  senderId: number,
+  content: string
+): Promise<ChatMessage> {
+  const response = await fetch(`${BASE_URL}/chat/${conversationId}/send/${senderId}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ content }),
+  });
+  const data = await parseApiResponse<any>(response, 'Khong gui duoc tin nhan');
+  return normalizeChatMessage(data);
 }
 
 // --- Product List ---

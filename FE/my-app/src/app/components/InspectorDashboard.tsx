@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import {
   AlertCircle, Bike, CheckCircle2, ClipboardCheck, FilePlus2,
-  Gauge, Loader2, Search, ShieldCheck, XCircle,
+  Gauge, Loader2, MessageCircle, Search, ShieldCheck, XCircle,
 } from 'lucide-react';
 import { getCurrentUser } from '../services/auth';
 import {
@@ -151,10 +151,16 @@ export function InspectorDashboard() {
             <h1 className="text-3xl font-bold text-gray-900 mt-1">Quan ly bao cao kiem dinh</h1>
             <p className="text-gray-500 mt-2">Tao report cho tung inspector va theo doi trang thai truc quan cho moi bike.</p>
           </div>
-          <Link to="/products" className="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm font-semibold hover:bg-gray-100">
-            <Bike size={18} />
-            Xem danh sach bike
-          </Link>
+          <div className="flex flex-wrap gap-2">
+            <Link to="/chat" className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700">
+              <MessageCircle size={18} />
+              Tin nhan buyer
+            </Link>
+            <Link to="/products" className="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm font-semibold hover:bg-gray-100">
+              <Bike size={18} />
+              Xem danh sach bike
+            </Link>
+          </div>
         </div>
 
         {message && (

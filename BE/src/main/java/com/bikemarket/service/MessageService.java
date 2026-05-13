@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -27,6 +28,10 @@ public class MessageService implements IMessageService {
 
     @Override
     public Message sendMessage(long conversationId, long senderId, String content) {
+        if (content == null || content.trim().isEmpty()) {
+            throw new IllegalArgumentException("Message content cannot be empty");
+        }
+
         Conversation conversation = conversationRepository.findById(conversationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Conversation not found with id: " + conversationId));
 
@@ -35,8 +40,16 @@ public class MessageService implements IMessageService {
             throw new ResourceNotFoundException("Sender not found with id: " + senderId);
         }
 
-        Message message = new Message(conversation, sender, content);
-        return messageRepository.save(message);
+        boolean isParticipant = conversation.getUser().getId() == senderId || conversation.getUser2().getId() == senderId;
+        if (!isParticipant) {
+            throw new IllegalArgumentException("Sender is not a participant in this conversation");
+        }
+
+        Message message = new Message(conversation, sender, content.trim());
+        Message savedMessage = messageRepository.save(message);
+        conversation.setUpdatedAt(LocalDateTime.now());
+        conversationRepository.save(conversation);
+        return savedMessage;
     }
 
     @Override
@@ -49,6 +62,9 @@ public class MessageService implements IMessageService {
 
     @Override
     public List<Message> getRecentMessagesByConversation(long conversationId, int limit) {
+        conversationRepository.findById(conversationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Conversation not found with id: " + conversationId));
+
         List<Message> messages = messageRepository.findByConversationIdOrderByCreatedAtDesc(conversationId);
         return messages.stream().limit(limit).toList();
     }

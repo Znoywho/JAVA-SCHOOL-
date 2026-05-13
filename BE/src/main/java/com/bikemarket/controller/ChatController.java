@@ -4,11 +4,15 @@ import com.bikemarket.dto.ApiResponse;
 import com.bikemarket.dto.ConversationDTO;
 import com.bikemarket.dto.MessageDTO;
 import com.bikemarket.dto.SendMessageDTO;
+import com.bikemarket.dto.UserDTO;
 import com.bikemarket.entity.Conversation;
 import com.bikemarket.entity.Message;
+import com.bikemarket.entity.User;
+import com.bikemarket.enums.Role;
 import com.bikemarket.exception.ResourceNotFoundException;
 import com.bikemarket.service.IConversationService;
 import com.bikemarket.service.IMessageService;
+import com.bikemarket.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +31,37 @@ public class ChatController {
     @Autowired
     private IMessageService messageService;
 
+    @Autowired
+    private UserService userService;
+
+    /**
+     * Get available chat contacts for the current user role
+     * GET /api/chat/contacts/{userId}
+     */
+    @GetMapping("/contacts/{userId}")
+    public ResponseEntity<ApiResponse<List<UserDTO>>> getAvailableContacts(@PathVariable long userId) {
+        try {
+            User currentUser = userService.findUserById(userId);
+            if (currentUser == null) {
+                throw new ResourceNotFoundException("User not found with id: " + userId);
+            }
+
+            List<UserDTO> contacts = userService.getAllUsers().stream()
+                    .filter(user -> user.getId() != userId)
+                    .filter(user -> isAllowedChatPair(currentUser.getRole(), user.getRole()))
+                    .map(this::convertUserToDTO)
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.ok(ApiResponse.ok(contacts, "Chat contacts retrieved successfully"));
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(ApiResponse.error("Not Found", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.error("Bad Request", e.getMessage()));
+        }
+    }
+
     /**
      * Create or get conversation between two users
      * POST /api/chat/conversation/{userId1}/{userId2}
@@ -43,6 +78,9 @@ public class ChatController {
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(ApiResponse.error("Not Found", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.error("Bad Request", e.getMessage()));
         }
     }
 
@@ -62,6 +100,9 @@ public class ChatController {
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(ApiResponse.error("Not Found", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.error("Bad Request", e.getMessage()));
         }
     }
 
@@ -99,6 +140,9 @@ public class ChatController {
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(ApiResponse.error("Not Found", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.error("Bad Request", e.getMessage()));
         }
     }
 
@@ -175,13 +219,23 @@ public class ChatController {
 
     // Helper methods
     private ConversationDTO convertToDTO(Conversation conversation) {
+        List<Message> recentMessages = messageService.getRecentMessagesByConversation(conversation.getId(), 1);
+        Message lastMessage = recentMessages.isEmpty() ? null : recentMessages.get(0);
+
         return ConversationDTO.builder()
                 .id(conversation.getId())
                 .userId1(conversation.getUser().getId())
                 .user1Name(conversation.getUser().getName())
+                .user1Role(conversation.getUser().getRole().name())
                 .userId2(conversation.getUser2().getId())
                 .user2Name(conversation.getUser2().getName())
-                .messageCount(conversation.getMessages() != null ? conversation.getMessages().size() : 0)
+                .user2Role(conversation.getUser2().getRole().name())
+                .messageCount((int) messageService.getMessageCountByConversation(conversation.getId()))
+                .lastMessageTime(lastMessage != null
+                        ? lastMessage.getCreatedAt()
+                        : (conversation.getUpdatedAt() != null ? conversation.getUpdatedAt() : conversation.getCreatedAt()))
+                .lastMessage(lastMessage != null ? lastMessage.getContent() : null)
+                .lastMessageSenderId(lastMessage != null ? lastMessage.getSender().getId() : null)
                 .build();
     }
 
@@ -194,5 +248,21 @@ public class ChatController {
                 .content(message.getContent())
                 .createdAt(message.getCreatedAt())
                 .build();
+    }
+
+    private UserDTO convertUserToDTO(User user) {
+        return UserDTO.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .email(user.getEmail())
+                .phone(user.getPhone())
+                .role(user.getRole())
+                .createdAt(user.getCreated_at())
+                .build();
+    }
+
+    private boolean isAllowedChatPair(Role role1, Role role2) {
+        return (role1 == Role.BUYER && (role2 == Role.SELLER || role2 == Role.INSPECTOR))
+                || (role2 == Role.BUYER && (role1 == Role.SELLER || role1 == Role.INSPECTOR));
     }
 }

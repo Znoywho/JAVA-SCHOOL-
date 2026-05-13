@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router';
+import { useParams, Link, useNavigate } from 'react-router';
 import {
   ChevronRight, Heart, ShoppingCart, MessageCircle, Share2,
   Shield, Award, MapPin, Star, ChevronLeft, Minus, Plus, Check,
@@ -37,6 +37,7 @@ function getReviewCountForStar(stats: ProductRatingStats | null, star: number): 
 
 export function ProductDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
@@ -150,6 +151,24 @@ export function ProductDetailPage() {
     } catch (err: any) {
       alert(err.message || 'Cập nhật wishlist thất bại');
     }
+  };
+
+  const handleOpenChat = (targetUserId?: number | null) => {
+    if (!targetUserId) return;
+
+    const currentUser = getCurrentUser();
+    if (!currentUser) {
+      alert('Vui long dang nhap de nhan tin');
+      navigate('/login');
+      return;
+    }
+
+    if (currentUser.id === targetUserId) {
+      alert('Ban khong the tu nhan tin cho chinh minh');
+      return;
+    }
+
+    navigate(`/chat?with=${targetUserId}`);
   };
 
   const handleSubmitReview = async () => {
@@ -451,6 +470,13 @@ export function ProductDetailPage() {
                     />
                   </div>
                   <p className="text-sm text-gray-600 mt-3 line-clamp-2">{report.reportDetails}</p>
+                  <button
+                    onClick={() => handleOpenChat(report.inspectorId)}
+                    className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-amber-50 text-amber-700 rounded-lg text-sm font-semibold hover:bg-amber-100 transition-colors"
+                  >
+                    <MessageCircle size={15} />
+                    Hoi inspector
+                  </button>
                 </div>
               ) : (
                 <p className="text-sm text-gray-500 mt-4">Bike này đang chờ inspector tạo báo cáo kiểm định.</p>
@@ -489,7 +515,10 @@ export function ProductDetailPage() {
                   <ShoppingCart size={20} />
                   Thêm vào giỏ
                 </button>
-                <button className="flex items-center justify-center gap-2 px-6 py-3.5 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-all font-semibold shadow-lg shadow-emerald-600/20 hover:shadow-emerald-600/30 hover:-translate-y-0.5">
+                <button
+                  onClick={() => handleOpenChat(product.sellerId)}
+                  className="flex items-center justify-center gap-2 px-6 py-3.5 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-all font-semibold shadow-lg shadow-emerald-600/20 hover:shadow-emerald-600/30 hover:-translate-y-0.5"
+                >
                   <MessageCircle size={20} />
                   Liên hệ
                 </button>
@@ -649,6 +678,13 @@ export function ProductDetailPage() {
                       </div>
                       <h3 className="text-lg font-semibold text-gray-900 mt-4">Nhận xét kiểm định</h3>
                       <p className="text-gray-700 leading-relaxed mt-2 whitespace-pre-line">{report.reportDetails}</p>
+                      <button
+                        onClick={() => handleOpenChat(report.inspectorId)}
+                        className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-amber-50 text-amber-700 rounded-lg text-sm font-semibold hover:bg-amber-100 transition-colors"
+                      >
+                        <MessageCircle size={15} />
+                        Hoi inspector
+                      </button>
                     </div>
                   </div>
                 ) : (
@@ -823,7 +859,10 @@ export function ProductDetailPage() {
                     <span>Đã tham gia 2024</span>
                   </div>
                   <div className="flex gap-3 mt-4">
-                    <button className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition-colors">
+                    <button
+                      onClick={() => handleOpenChat(product.sellerId)}
+                      className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition-colors"
+                    >
                       <MessageCircle size={16} />
                       Nhắn tin
                     </button>

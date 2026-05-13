@@ -11,9 +11,11 @@ import java.util.List;
 
 @Repository
 public interface IMessageRepository extends JpaRepository<Message, Long> {
-    List<Message> findByConversationIdOrderByCreatedAtDesc(long conversationId);
-    
-    List<Message> findByConversationIdOrderByCreatedAtAsc(long conversationId);
+    @Query("SELECT m FROM Message m JOIN FETCH m.sender WHERE m.conversation.id = :conversationId ORDER BY m.createdAt DESC")
+    List<Message> findByConversationIdOrderByCreatedAtDesc(@Param("conversationId") long conversationId);
+
+    @Query("SELECT m FROM Message m JOIN FETCH m.sender WHERE m.conversation.id = :conversationId ORDER BY m.createdAt ASC")
+    List<Message> findByConversationIdOrderByCreatedAtAsc(@Param("conversationId") long conversationId);
     
     //@Query("SELECT m FROM Message m WHERE m.conversation.id = :conversationId AND m.createdAt >= CURRENT_TIMESTAMP - INTERVAL 30 DAY")
     //List<Message> findRecentMessages(@Param("conversationId") long conversationId);

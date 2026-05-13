@@ -16,6 +16,7 @@ import { WishlistPage } from './components/WishlistPage';
 import { MyOrdersPage } from './components/MyOrdersPage';
 import { OrderDetailPage } from './components/OrderDetailPage';
 import { InspectorDashboard } from './components/InspectorDashboard';
+import { ChatPage } from './components/ChatPage';
 
 function HomePage() {
   return (
@@ -43,6 +44,7 @@ export default function App() {
         <Route path="/wishlist" element={<WishlistPage />} />
         <Route path="/orders" element={<MyOrdersPage />} />
         <Route path="/orders/:id" element={<OrderDetailPage />} />
+        <Route path="/chat" element={<ChatPage />} />
         <Route path="/seller/dashboard" element={<SellerDashboard />} />
         <Route path="/inspector/dashboard" element={<InspectorDashboard />} />
       </Routes>

@@ -14,6 +14,7 @@ import {
   MapPin,
   Copy,
   Check,
+  MessageCircle,
 } from 'lucide-react';
 import { getCurrentUser } from '../services/auth';
 import {
@@ -312,6 +313,15 @@ export function MyOrdersPage() {
                             >
                               {cancellingId === order.id ? 'Đang hủy...' : 'Hủy đơn'}
                             </button>
+                          )}
+                          {order.sellerId && (
+                            <Link
+                              to={`/chat?with=${order.sellerId}`}
+                              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium text-emerald-600 border border-emerald-200 rounded-lg hover:bg-emerald-50 transition-colors"
+                            >
+                              <MessageCircle size={13} />
+                              Chat seller
+                            </Link>
                           )}
                           <Link
                             to={`/orders/${order.id}`}

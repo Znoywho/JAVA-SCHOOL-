@@ -11,6 +11,7 @@ import {
   CreditCard,
   Loader2,
   MapPin,
+  MessageCircle,
   Package,
   Phone,
   Truck,
@@ -408,6 +409,15 @@ export function OrderDetailPage() {
                 <div className="text-sm text-gray-600">
                   Seller: <span className="font-semibold text-gray-900">{order.sellerName}</span>
                 </div>
+                {order.sellerId && (
+                  <Link
+                    to={`/chat?with=${order.sellerId}`}
+                    className="inline-flex items-center gap-2 px-3.5 py-2 text-sm font-medium text-emerald-600 border border-emerald-200 rounded-lg hover:bg-emerald-50 transition-colors"
+                  >
+                    <MessageCircle size={15} />
+                    Chat seller
+                  </Link>
+                )}
               </div>
             </div>
           </div>

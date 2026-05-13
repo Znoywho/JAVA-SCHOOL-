@@ -4,7 +4,7 @@ import {
   Plus, Package, Eye, EyeOff, Trash2, ChevronRight,
   AlertCircle, CheckCircle, X, Bike, Pencil, ImagePlus,
   ClipboardList, Truck, Clock, MapPin, Copy, Check,
-  CheckCircle2, XCircle, Loader2,
+  CheckCircle2, XCircle, Loader2, MessageCircle,
 } from 'lucide-react';
 import { getCurrentUser } from '../services/auth';
 import {
@@ -883,6 +883,15 @@ export function SellerDashboard() {
                           <span className="text-lg font-bold text-red-600">{formatPrice(order.totalPrice)}</span>
                         </div>
                         <div className="flex gap-2">
+                          {order.buyerId && (
+                            <Link
+                              to={`/chat?with=${order.buyerId}`}
+                              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-emerald-600 border border-emerald-200 rounded-lg hover:bg-emerald-50"
+                            >
+                              <MessageCircle size={13} />
+                              Chat buyer
+                            </Link>
+                          )}
                           {nextAction && shipment && (
                             <button
                               onClick={() => handleUpdateShippingStatus(shipment.id, nextAction.nextStatus)}

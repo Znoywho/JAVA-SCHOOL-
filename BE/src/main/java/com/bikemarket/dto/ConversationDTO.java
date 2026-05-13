@@ -16,9 +16,13 @@ public class ConversationDTO {
     private long id;
     private long userId1;
     private String user1Name;
+    private String user1Role;
     private long userId2;
     private String user2Name;
+    private String user2Role;
     private int messageCount;
     private LocalDateTime lastMessageTime;
+    private String lastMessage;
+    private Long lastMessageSenderId;
     private List<MessageDTO> messages;
 }

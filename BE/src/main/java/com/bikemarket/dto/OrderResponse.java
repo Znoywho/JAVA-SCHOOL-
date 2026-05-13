@@ -5,7 +5,9 @@ import java.util.List;
 
 public class OrderResponse {
     private Long id;
+    private Long buyerId;
     private String buyerName;
+    private Long sellerId;
     private String sellerName;
     private double totalPrice;
     private String orderStatus;
@@ -20,8 +22,14 @@ public class OrderResponse {
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
+    public Long getBuyerId() { return buyerId; }
+    public void setBuyerId(Long buyerId) { this.buyerId = buyerId; }
+
     public String getBuyerName() { return buyerName; }
     public void setBuyerName(String buyerName) { this.buyerName = buyerName; }
+
+    public Long getSellerId() { return sellerId; }
+    public void setSellerId(Long sellerId) { this.sellerId = sellerId; }
 
     public String getSellerName() { return sellerName; }
     public void setSellerName(String sellerName) { this.sellerName = sellerName; }

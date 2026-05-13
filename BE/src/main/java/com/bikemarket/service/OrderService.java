@@ -149,7 +149,9 @@ public class OrderService implements IOrderService {
     private OrderResponse mapToResponse(Order order) {
         OrderResponse res = new OrderResponse();
         res.setId(order.getId());
+        res.setBuyerId(order.getBuyer().getId());
         res.setBuyerName(order.getBuyer().getName());
+        res.setSellerId(order.getSeller().getId());
         res.setSellerName(order.getSeller().getName());
         res.setTotalPrice(order.getTotalPrice());
         res.setOrderStatus(order.getOrderStatus().name());
