@@ -32,6 +32,7 @@ public class InspectorReport {
   @Column(name = "created_at", updatable = false)
   private LocalDateTime created_at;
 
+  @Enumerated(EnumType.STRING)
   @Column(name = "status", nullable = false)
   private InspectorReportStatus status;
 

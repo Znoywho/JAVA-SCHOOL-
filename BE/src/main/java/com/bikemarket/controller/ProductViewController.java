@@ -5,8 +5,10 @@ import com.bikemarket.dto.ProductMediaResponseDTO;
 import com.bikemarket.dto.ProductResponseDTO;
 import com.bikemarket.entity.Product;
 import com.bikemarket.entity.ProductMedia;
+import com.bikemarket.entity.InspectorReport;
 import com.bikemarket.enums.ProductStatus;
 import com.bikemarket.exception.ResourceNotFoundException;
+import com.bikemarket.service.InspectorReportService;
 import com.bikemarket.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -33,6 +35,9 @@ public class ProductViewController {
 
     @Autowired
     private ProductService productService;
+
+    @Autowired
+    private InspectorReportService inspectorReportService;
 
 
     /*
@@ -65,6 +70,11 @@ public class ProductViewController {
             productData.put("media", productService.getProductMedia(productId).stream()
                     .map(this::toMediaResponseDTO)
                     .toList());
+            try {
+                productData.put("inspectorReport", toInspectorReportResponse(inspectorReportService.getLatestReportByProduct(productId)));
+            } catch (ResourceNotFoundException ignored) {
+                productData.put("inspectorReport", null);
+            }
 
             return ResponseEntity.ok(ApiResponse.ok(productData, "Product retrieved successfully"));
         } catch (ResourceNotFoundException e) {
@@ -289,5 +299,19 @@ public class ProductViewController {
                 .mediaType(media.getMedia_type())
                 .thumbnail(Boolean.parseBoolean(media.getIsThumbnail()))
                 .build();
+    }
+
+    private Map<String, Object> toInspectorReportResponse(InspectorReport report) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("id", report.getId());
+        data.put("productId", report.getProduct() != null ? report.getProduct().getId() : null);
+        data.put("productTitle", report.getProduct() != null ? report.getProduct().getTitle() : null);
+        data.put("inspectorId", report.getInspectorId() != null ? report.getInspectorId().getId() : null);
+        data.put("inspectorName", report.getInspectorId() != null ? report.getInspectorId().getName() : null);
+        data.put("createdAt", report.getCreated_at());
+        data.put("status", report.getStatus() != null ? report.getStatus().name() : null);
+        data.put("scoreRating", report.getScore_rating());
+        data.put("reportDetails", report.getReport_details());
+        return data;
     }
 }

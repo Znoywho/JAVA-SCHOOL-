@@ -71,6 +71,16 @@ function AuthSection() {
                 Đơn hàng của tôi
               </Link>
             )}
+            {user.role === 'INSPECTOR' && (
+              <Link
+                to="/inspector/dashboard"
+                onClick={() => setShowDropdown(false)}
+                className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 rounded-lg text-sm text-gray-700 transition-colors"
+              >
+                <ClipboardList size={16} />
+                Bao cao kiem dinh
+              </Link>
+            )}
             <button 
               onClick={handleLogout}
               className="w-full flex items-center gap-2 px-3 py-2 hover:bg-red-50 rounded-lg text-sm text-red-600 transition-colors"

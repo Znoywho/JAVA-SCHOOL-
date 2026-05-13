@@ -3,12 +3,13 @@ import { useParams, Link } from 'react-router';
 import {
   ChevronRight, Heart, ShoppingCart, MessageCircle, Share2,
   Shield, Award, MapPin, Star, ChevronLeft, Minus, Plus, Check,
-  Ruler, Weight, Palette, User as UserIcon, CircleGauge
+  Ruler, Weight, Palette, User as UserIcon, CircleGauge, ClipboardCheck
 } from 'lucide-react';
 import { getCurrentUser } from '../services/auth';
 import {
   addToCart, addToWishlist, checkWishlist, fetchProductById,
-  formatPrice, getPlaceholderImage, removeFromWishlist, type Product
+  fetchLatestProductReport, formatPrice, getPlaceholderImage, removeFromWishlist,
+  type InspectorReport, type Product
 } from '../services/api';
 
 export function ProductDetailPage() {
@@ -18,16 +19,25 @@ export function ProductDetailPage() {
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [isFavorite, setIsFavorite] = useState(false);
-  const [activeTab, setActiveTab] = useState<'specs' | 'description' | 'seller'>('specs');
+  const [report, setReport] = useState<InspectorReport | null>(null);
+  const [activeTab, setActiveTab] = useState<'specs' | 'description' | 'report' | 'seller'>('specs');
 
   useEffect(() => {
     if (id) {
       setLoading(true);
       fetchProductById(parseInt(id)).then(data => {
         setProduct(data);
+        setReport(data.inspectorReport ?? null);
         setLoading(false);
       });
     }
+  }, [id]);
+
+  useEffect(() => {
+    if (!id) return;
+    fetchLatestProductReport(parseInt(id))
+      .then(data => setReport(data))
+      .catch(() => {});
   }, [id]);
 
   useEffect(() => {
@@ -310,6 +320,47 @@ export function ProductDetailPage() {
               </p>
             </div>
 
+            {/* Inspector report summary */}
+            <div className="bg-white rounded-xl border border-gray-100 p-5">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <span className="font-medium text-gray-800 flex items-center gap-2">
+                    <ClipboardCheck size={18} />
+                    Báo cáo kiểm định
+                  </span>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {report ? `Inspector: ${report.inspectorName || `#${report.inspectorId}`}` : 'Chưa có report từ inspector'}
+                  </p>
+                </div>
+                {report && (
+                  <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                    report.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-700' :
+                    report.status === 'REJECTED' ? 'bg-red-100 text-red-700' :
+                    'bg-amber-100 text-amber-700'
+                  }`}>
+                    {report.status === 'APPROVED' ? 'Đạt' : report.status === 'REJECTED' ? 'Không đạt' : 'Theo dõi'}
+                  </span>
+                )}
+              </div>
+              {report ? (
+                <div className="mt-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm text-gray-500">Điểm kiểm định</span>
+                    <span className="text-lg font-bold text-gray-900">{Math.round(report.scoreRating)}/100</span>
+                  </div>
+                  <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full ${report.scoreRating >= 85 ? 'bg-emerald-500' : report.scoreRating >= 65 ? 'bg-amber-500' : 'bg-red-500'}`}
+                      style={{ width: `${Math.min(100, Math.max(0, report.scoreRating))}%` }}
+                    />
+                  </div>
+                  <p className="text-sm text-gray-600 mt-3 line-clamp-2">{report.reportDetails}</p>
+                </div>
+              ) : (
+                <p className="text-sm text-gray-500 mt-4">Bike này đang chờ inspector tạo báo cáo kiểm định.</p>
+              )}
+            </div>
+
             {/* Quantity & Actions */}
             <div className="space-y-4">
               <div className="flex items-center gap-4">
@@ -388,7 +439,7 @@ export function ProductDetailPage() {
         {/* Tabs: Specs / Description / Seller */}
         <div className="mt-12">
           <div className="flex border-b border-gray-200">
-            {(['specs', 'description', 'seller'] as const).map(tab => (
+            {(['specs', 'description', 'report', 'seller'] as const).map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -398,7 +449,8 @@ export function ProductDetailPage() {
                     : 'text-gray-500 border-transparent hover:text-gray-800 hover:border-gray-300'}`}
               >
                 {tab === 'specs' ? 'Thông số kỹ thuật' :
-                 tab === 'description' ? 'Mô tả' : 'Người bán'}
+                 tab === 'description' ? 'Mô tả' :
+                 tab === 'report' ? 'Báo cáo kiểm định' : 'Người bán'}
               </button>
             ))}
           </div>
@@ -467,6 +519,48 @@ export function ProductDetailPage() {
                   <li>Màu {product.color || 'đẹp mắt'}, thiết kế hiện đại</li>
                   {product.isVerified && <li>Đã kiểm định – An toàn tuyệt đối</li>}
                 </ul>
+              </div>
+            )}
+
+            {activeTab === 'report' && (
+              <div>
+                {report ? (
+                  <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-6">
+                    <div className="rounded-xl border border-gray-100 p-5">
+                      <p className="text-sm text-gray-500">Điểm kiểm định</p>
+                      <p className="text-4xl font-extrabold text-gray-900 mt-2">{Math.round(report.scoreRating)}</p>
+                      <div className="h-2 bg-gray-100 rounded-full overflow-hidden mt-4">
+                        <div
+                          className={`h-full ${report.scoreRating >= 85 ? 'bg-emerald-500' : report.scoreRating >= 65 ? 'bg-amber-500' : 'bg-red-500'}`}
+                          style={{ width: `${Math.min(100, Math.max(0, report.scoreRating))}%` }}
+                        />
+                      </div>
+                      <p className="text-xs text-gray-500 mt-3">
+                        {report.createdAt ? `Ngày kiểm định: ${new Date(report.createdAt).toLocaleDateString('vi-VN')}` : 'Ngày kiểm định mới nhất'}
+                      </p>
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                          report.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-700' :
+                          report.status === 'REJECTED' ? 'bg-red-100 text-red-700' :
+                          'bg-amber-100 text-amber-700'
+                        }`}>
+                          {report.status === 'APPROVED' ? 'Đạt kiểm định' : report.status === 'REJECTED' ? 'Không đạt kiểm định' : 'Cần theo dõi'}
+                        </span>
+                        <span className="text-sm text-gray-500">Inspector: {report.inspectorName || `#${report.inspectorId}`}</span>
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-900 mt-4">Nhận xét kiểm định</h3>
+                      <p className="text-gray-700 leading-relaxed mt-2 whitespace-pre-line">{report.reportDetails}</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-10">
+                    <ClipboardCheck size={36} className="mx-auto text-gray-300" />
+                    <h3 className="text-lg font-semibold text-gray-900 mt-3">Chưa có báo cáo kiểm định</h3>
+                    <p className="text-gray-500 mt-1">Inspector sẽ tạo report để hiển thị điểm và nhận xét trực quan cho bike này.</p>
+                  </div>
+                )}
               </div>
             )}
 

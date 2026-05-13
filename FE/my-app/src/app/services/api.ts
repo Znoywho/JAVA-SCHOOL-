@@ -27,6 +27,29 @@ export interface Product {
   maxWeightCapacityKg?: number;
   weightKg?: number;
   color?: string;
+  inspectorReport?: InspectorReport | null;
+}
+
+export type InspectorReportStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
+
+export interface InspectorReport {
+  id: number;
+  productId: number;
+  productTitle?: string;
+  inspectorId: number;
+  inspectorName?: string;
+  createdAt?: string;
+  status: InspectorReportStatus;
+  scoreRating: number;
+  reportDetails: string;
+}
+
+export interface InspectorReportPayload {
+  productId: number;
+  inspectorId: number;
+  scoreRating: number;
+  reportDetails: string;
+  status: InspectorReportStatus;
 }
 
 export interface ProductMedia {
@@ -213,6 +236,21 @@ function normalizeProduct(raw: any): Product {
     maxWeightCapacityKg: raw.maxWeightCapacityKg ?? undefined,
     weightKg: raw.weightKg ?? undefined,
     color: raw.color ?? raw.Color ?? undefined,
+    inspectorReport: raw.inspectorReport ? normalizeInspectorReport(raw.inspectorReport) : null,
+  };
+}
+
+function normalizeInspectorReport(raw: any): InspectorReport {
+  return {
+    id: raw.id ?? raw.Id ?? 0,
+    productId: raw.productId ?? raw.product?.id ?? raw.product?.Id ?? 0,
+    productTitle: raw.productTitle ?? raw.product?.title ?? raw.product?.Title ?? undefined,
+    inspectorId: raw.inspectorId ?? raw.InspectorId?.id ?? raw.InspectorId?.Id ?? 0,
+    inspectorName: raw.inspectorName ?? raw.InspectorId?.name ?? undefined,
+    createdAt: raw.createdAt ?? raw.created_at ?? undefined,
+    status: raw.status ?? 'PENDING',
+    scoreRating: raw.scoreRating ?? raw.score_rating ?? 0,
+    reportDetails: raw.reportDetails ?? raw.report_details ?? '',
   };
 }
 
@@ -891,6 +929,66 @@ export async function updateShippingStatus(shipmentId: number, status: string): 
     method: 'PATCH',
   });
   return parseApiResponse<ShipmentResponse>(response, 'Cập nhật trạng thái giao hàng thất bại');
+}
+
+// ==================== Inspector Reports API ====================
+
+const MOCK_REPORTS: InspectorReport[] = [
+  {
+    id: 1,
+    productId: 1,
+    productTitle: BIKE_NAMES[1],
+    inspectorId: 9,
+    inspectorName: 'Inspector REBIKE',
+    createdAt: new Date().toISOString(),
+    status: 'APPROVED',
+    scoreRating: 91,
+    reportDetails: 'Khung va phuoc on dinh. Bo truyen dong hoat dong tot. Nen ve sinh sen va can chinh phanh truoc khi giao.',
+  },
+];
+
+export async function fetchInspectorReports(inspectorId: number): Promise<InspectorReport[]> {
+  return fetchWithFallback(
+    `${BASE_URL}/inspector-reports/inspector/${inspectorId}`,
+    () => MOCK_REPORTS.filter(report => report.inspectorId === inspectorId),
+    (data) => Array.isArray(data) ? data.map(normalizeInspectorReport) : []
+  );
+}
+
+export async function fetchProductReports(productId: number): Promise<InspectorReport[]> {
+  return fetchWithFallback(
+    `${BASE_URL}/inspector-reports/product/${productId}`,
+    () => MOCK_REPORTS.filter(report => report.productId === productId),
+    (data) => Array.isArray(data) ? data.map(normalizeInspectorReport) : []
+  );
+}
+
+export async function fetchLatestProductReport(productId: number): Promise<InspectorReport | null> {
+  return fetchWithFallback(
+    `${BASE_URL}/inspector-reports/product/${productId}/latest`,
+    () => MOCK_REPORTS.find(report => report.productId === productId) ?? null,
+    (data) => data ? normalizeInspectorReport(data) : null
+  );
+}
+
+export async function createInspectorReport(payload: InspectorReportPayload): Promise<InspectorReport> {
+  const response = await fetch(`${BASE_URL}/inspector-reports`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  const data = await parseApiResponse<any>(response, 'Tao bao cao kiem dinh that bai');
+  return normalizeInspectorReport(data);
+}
+
+export async function updateInspectorReport(reportId: number, payload: Partial<InspectorReportPayload>): Promise<InspectorReport> {
+  const response = await fetch(`${BASE_URL}/inspector-reports/${reportId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  const data = await parseApiResponse<any>(response, 'Cap nhat bao cao kiem dinh that bai');
+  return normalizeInspectorReport(data);
 }
 
 // ==================== Utilities ====================

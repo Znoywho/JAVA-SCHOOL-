@@ -1,6 +1,7 @@
 package com.bikemarket.entity;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -66,9 +67,9 @@ public class Product {
   @Column(name = "updated_at")
   private LocalDateTime updated_at;
 
-  @OneToOne(mappedBy = "product")
+  @OneToMany(mappedBy = "product")
   @JsonIgnore
-  private InspectorReport inspectorReport;
+  private List<InspectorReport> inspectorReports;
 
   public Product(int Total, User SellerId, String Title, Brand brand, Category category, double ConditionPercent, double Price) {
     this.Total = Total;

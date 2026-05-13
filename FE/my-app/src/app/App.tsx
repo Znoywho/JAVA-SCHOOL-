@@ -15,6 +15,7 @@ import { CartPage } from './components/CartPage';
 import { WishlistPage } from './components/WishlistPage';
 import { MyOrdersPage } from './components/MyOrdersPage';
 import { OrderDetailPage } from './components/OrderDetailPage';
+import { InspectorDashboard } from './components/InspectorDashboard';
 
 function HomePage() {
   return (
@@ -43,6 +44,7 @@ export default function App() {
         <Route path="/orders" element={<MyOrdersPage />} />
         <Route path="/orders/:id" element={<OrderDetailPage />} />
         <Route path="/seller/dashboard" element={<SellerDashboard />} />
+        <Route path="/inspector/dashboard" element={<InspectorDashboard />} />
       </Routes>
       <Footer />
     </div>
