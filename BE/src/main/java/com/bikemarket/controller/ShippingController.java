@@ -47,6 +47,17 @@ public class ShippingController {
                         .body(ApiResponse.error("Not Found", "Shipment not found for order: " + orderId)));
     }
 
+    @GetMapping("/shipments")
+    public ResponseEntity<ApiResponse<List<ShipmentResponse>>> listShipments(
+            @RequestParam(required = false) Long shippingCompanyId,
+            @RequestParam(required = false) ShippingStatus status,
+            @RequestParam(defaultValue = "false") boolean onlyCod) {
+        return ResponseEntity.ok(ApiResponse.ok(
+                shippingService.listShipments(shippingCompanyId, status, onlyCod),
+                "Shipments retrieved successfully"
+        ));
+    }
+
     @PatchMapping("/{shipmentId}/status")
     public ResponseEntity<ApiResponse<ShipmentResponse>> updateStatus(
             @PathVariable Long shipmentId,
@@ -54,6 +65,16 @@ public class ShippingController {
         return ResponseEntity.ok(ApiResponse.ok(
                 shippingService.updateShipmentStatus(shipmentId, status),
                 "Shipment status updated successfully"
+        ));
+    }
+
+    @PatchMapping("/{shipmentId}/cod-payment/confirm")
+    public ResponseEntity<ApiResponse<ShipmentResponse>> confirmCodPayment(
+            @PathVariable Long shipmentId,
+            @RequestParam(required = false) String confirmedBy) {
+        return ResponseEntity.ok(ApiResponse.ok(
+                shippingService.confirmCodPayment(shipmentId, confirmedBy),
+                "COD payment confirmed successfully"
         ));
     }
 }

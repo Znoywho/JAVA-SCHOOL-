@@ -21,6 +21,10 @@ export function LoginPage() {
       // Redirect based on role
       if (user.role === 'SELLER') {
         navigate('/seller/dashboard');
+      } else if (user.role === 'SHIPPER') {
+        navigate('/shipper');
+      } else if (user.role === 'INSPECTOR') {
+        navigate('/inspector/dashboard');
       } else {
         navigate('/');
       }
@@ -129,6 +133,7 @@ export function LoginPage() {
             {[
               { role: 'Seller', email: 'seller1@rebike.vn', pass: 'seller123', color: 'blue' },
               { role: 'Buyer', email: 'buyer1@gmail.com', pass: 'buyer123', color: 'green' },
+              { role: 'Shipper', email: 'ghtk@rebike.vn', pass: 'shipper123', color: 'amber' },
               { role: 'Admin', email: 'admin@rebike.vn', pass: 'admin123', color: 'purple' },
             ].map(demo => (
               <button
@@ -143,7 +148,8 @@ export function LoginPage() {
                 <div className="flex items-center gap-2">
                   <span className={`w-2 h-2 rounded-full ${
                     demo.color === 'blue' ? 'bg-blue-500' :
-                    demo.color === 'green' ? 'bg-green-500' : 'bg-purple-500'
+                    demo.color === 'green' ? 'bg-green-500' :
+                    demo.color === 'amber' ? 'bg-amber-500' : 'bg-purple-500'
                   }`} />
                   <span className="font-medium text-gray-700">{demo.role}</span>
                 </div>

@@ -14,6 +14,7 @@ import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -119,6 +120,26 @@ public class ShippingService implements IShippingService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<ShipmentResponse> listShipments(Long shippingCompanyId, ShippingStatus status, boolean onlyCod) {
+        List<Shipping> shipments;
+        if (shippingCompanyId != null && status != null) {
+            shipments = shippingRepository.findByShippingCompanyIdAndStatusOrderByCreatedAtDesc(shippingCompanyId, status);
+        } else if (shippingCompanyId != null) {
+            shipments = shippingRepository.findByShippingCompanyIdOrderByCreatedAtDesc(shippingCompanyId);
+        } else if (status != null) {
+            shipments = shippingRepository.findByStatusOrderByCreatedAtDesc(status);
+        } else {
+            shipments = shippingRepository.findAllByOrderByCreatedAtDesc();
+        }
+
+        return shipments.stream()
+                .filter(shipping -> !onlyCod || isCod(shipping.getOrder().getPaymentMethod()))
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Optional<ShipmentResponse> getShipmentByOrder(Long orderId) {
         return shippingRepository.findByOrderId(orderId).map(this::mapToResponse);
     }
@@ -130,6 +151,31 @@ public class ShippingService implements IShippingService {
 
         shipping.setStatus(status);
         syncOrderStatus(shipping);
+
+        return mapToResponse(shippingRepository.save(shipping));
+    }
+
+    @Override
+    public ShipmentResponse confirmCodPayment(Long shipmentId, String confirmedBy) {
+        Shipping shipping = shippingRepository.findById(shipmentId)
+                .orElseThrow(() -> new IllegalArgumentException("Shipment không tồn tại: " + shipmentId));
+
+        Order order = shipping.getOrder();
+        if (!isCod(order.getPaymentMethod())) {
+            throw new IllegalArgumentException("Chỉ đơn COD mới cần đơn vị vận chuyển xác nhận thu tiền");
+        }
+        if (shipping.getStatus() == ShippingStatus.CANCELLED || shipping.getStatus() == ShippingStatus.RETURNED) {
+            throw new IllegalArgumentException("Không thể xác nhận thanh toán cho vận đơn đã hủy hoặc hoàn trả");
+        }
+
+        shipping.setStatus(ShippingStatus.DELIVERED);
+        shipping.setCodPaymentConfirmed(true);
+        shipping.setCodPaymentConfirmedAt(LocalDateTime.now());
+        shipping.setCodPaymentConfirmedBy(isBlank(confirmedBy) ? "Đơn vị vận chuyển" : confirmedBy.trim());
+
+        order.setStatus(OrderStatus.DELIVERED);
+        order.setBillStatus(BillStatus.PAID);
+        orderRepository.save(order);
 
         return mapToResponse(shippingRepository.save(shipping));
     }
@@ -159,6 +205,14 @@ public class ShippingService implements IShippingService {
                 .codAmount(shipping.getCodAmount())
                 .trackingCode(shipping.getTrackingCode())
                 .status(shipping.getStatus().name())
+                .codPaymentConfirmed(shipping.isCodPaymentConfirmed())
+                .codPaymentConfirmedAt(shipping.getCodPaymentConfirmedAt())
+                .codPaymentConfirmedBy(shipping.getCodPaymentConfirmedBy())
+                .orderBillStatus(shipping.getOrder().getBillStatus().name())
+                .paymentMethod(shipping.getOrder().getPaymentMethod())
+                .orderTotalPrice(shipping.getOrder().getTotalPrice())
+                .buyerName(shipping.getOrder().getBuyer().getName())
+                .sellerName(shipping.getOrder().getSeller().getName())
                 .createdAt(shipping.getCreatedAt())
                 .updatedAt(shipping.getUpdatedAt())
                 .build();
@@ -216,9 +270,6 @@ public class ShippingService implements IShippingService {
         }
         if (status == ShippingStatus.DELIVERED) {
             order.setStatus(OrderStatus.DELIVERED);
-            if (isCod(order.getPaymentMethod())) {
-                order.setBillStatus(BillStatus.PAID);
-            }
         }
         if (status == ShippingStatus.CANCELLED) {
             order.setStatus(OrderStatus.CANCELLED);

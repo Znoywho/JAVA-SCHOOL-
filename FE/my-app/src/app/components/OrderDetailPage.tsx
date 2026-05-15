@@ -121,6 +121,9 @@ export function OrderDetailPage() {
   const shipment = order?.shipment;
   const currentStepIdx = shipment ? getStepIndex(shipment.status) : -1;
   const isCancelledOrReturned = shipment?.status === 'CANCELLED' || shipment?.status === 'RETURNED';
+  const waitingCodConfirmation = order?.paymentMethod === 'COD'
+    && order?.billStatus !== 'PAID'
+    && shipment?.status === 'DELIVERED';
 
   const orderStatusStyle = ORDER_STATUS_STYLE[order?.orderStatus ?? 'PENDING'] ?? ORDER_STATUS_STYLE.PENDING;
   const paymentInfo = PAYMENT_LABELS[order?.paymentMethod ?? ''] ?? PAYMENT_LABELS.COD;
@@ -398,7 +401,7 @@ export function OrderDetailPage() {
                 <span className={`font-semibold ${
                   order.billStatus === 'PAID' ? 'text-emerald-600' : order.billStatus === 'CANCELLED' ? 'text-red-600' : 'text-amber-600'
                 }`}>
-                  {BILL_STATUS_LABELS[order.billStatus] ?? order.billStatus}
+                  {waitingCodConfirmation ? 'Chờ đơn vị vận chuyển xác nhận COD' : BILL_STATUS_LABELS[order.billStatus] ?? order.billStatus}
                 </span>
               </div>
             </div>

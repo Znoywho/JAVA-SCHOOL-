@@ -24,6 +24,14 @@ public class ShipmentResponse {
     private double codAmount;
     private String trackingCode;
     private String status;
+    private boolean codPaymentConfirmed;
+    private LocalDateTime codPaymentConfirmedAt;
+    private String codPaymentConfirmedBy;
+    private String orderBillStatus;
+    private String paymentMethod;
+    private double orderTotalPrice;
+    private String buyerName;
+    private String sellerName;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

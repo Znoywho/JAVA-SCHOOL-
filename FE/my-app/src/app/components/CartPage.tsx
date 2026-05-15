@@ -311,7 +311,9 @@ export function CartPage() {
                 <CheckCircle2 size={28} className="text-emerald-600" />
               </div>
               <div className="flex-1">
-                <h2 className="text-xl font-bold text-gray-900">Thanh toán thành công</h2>
+                <h2 className="text-xl font-bold text-gray-900">
+                  {paymentMethod === 'COD' ? 'Đặt hàng thành công' : 'Thanh toán thành công'}
+                </h2>
                 <p className="mt-1 text-sm text-gray-600">
                   Đã tạo {createdOrders.length} đơn hàng. Phương thức: {
                     PAYMENT_OPTIONS.find(option => option.value === paymentMethod)?.label
@@ -334,7 +336,7 @@ export function CartPage() {
                       <div className="text-left sm:text-right">
                         <p className="font-bold text-red-600">{formatPrice(order.totalPrice)}</p>
                         <p className="text-xs text-gray-500">
-                          {order.billStatus === 'PAID' ? 'Đã thanh toán' : 'Chờ thanh toán'} · {order.shipment?.status ?? 'PENDING'}
+                          {order.billStatus === 'PAID' ? 'Đã thanh toán' : paymentMethod === 'COD' ? 'Chờ thu COD' : 'Chờ thanh toán'} · {order.shipment?.status ?? 'PENDING'}
                         </p>
                       </div>
                     </div>

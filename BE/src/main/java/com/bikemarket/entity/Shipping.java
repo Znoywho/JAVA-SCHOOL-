@@ -53,6 +53,15 @@ public class Shipping {
   @Column(name = "status", nullable = false)
   private ShippingStatus status;
 
+  @Column(name = "cod_payment_confirmed", nullable = false, columnDefinition = "boolean default false")
+  private boolean codPaymentConfirmed = false;
+
+  @Column(name = "cod_payment_confirmed_at")
+  private LocalDateTime codPaymentConfirmedAt;
+
+  @Column(name = "cod_payment_confirmed_by", length = 120)
+  private String codPaymentConfirmedBy;
+
   @CreationTimestamp
   @Column(name = "created_at", updatable = false)
   private LocalDateTime createdAt;
@@ -83,5 +92,6 @@ public class Shipping {
     this.codAmount = codAmount;
     this.trackingCode = trackingCode;
     this.status = ShippingStatus.PENDING;
+    this.codPaymentConfirmed = false;
   }
 }

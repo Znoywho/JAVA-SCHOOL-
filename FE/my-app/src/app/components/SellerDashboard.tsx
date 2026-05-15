@@ -774,6 +774,9 @@ export function SellerDashboard() {
                 const shippingStatus = shipment ? SHIPPING_STATUS_LABELS[shipment.status] : null;
                 const nextAction = shipment ? getNextShippingAction(shipment.status) : null;
                 const isUpdating = shipment && updatingShipmentId === shipment.id;
+                const waitingCodConfirmation = order.paymentMethod === 'COD'
+                  && order.billStatus !== 'PAID'
+                  && shipment?.status === 'DELIVERED';
 
                 return (
                   <div key={order.id} className="bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
@@ -807,7 +810,8 @@ export function SellerDashboard() {
                           order.billStatus === 'CANCELLED' ? 'text-red-500' : 'text-amber-600'
                         }`}>
                           {order.billStatus === 'PAID' ? '✓ Đã thanh toán' :
-                           order.billStatus === 'CANCELLED' ? 'Đã hủy' : 'Chờ thanh toán'}
+                           order.billStatus === 'CANCELLED' ? 'Đã hủy' :
+                           waitingCodConfirmation ? 'Chờ vận chuyển xác nhận COD' : 'Chờ thanh toán'}
                         </span>
                       </div>
                     </div>
@@ -871,6 +875,13 @@ export function SellerDashboard() {
                               <MapPin size={12} className="mt-0.5 shrink-0" />
                               <span className="line-clamp-2">{shipment.shippingAddress}</span>
                             </div>
+                            {order.paymentMethod === 'COD' && shipment.codAmount > 0 && (
+                              <div className="sm:col-span-3 pt-1 text-gray-600">
+                                COD: <span className="font-semibold text-red-600">{formatPrice(shipment.codAmount)}</span>
+                                <span className="mx-2 text-gray-300">|</span>
+                                {shipment.codPaymentConfirmed ? 'Đơn vị vận chuyển đã thu tiền' : 'Chờ đơn vị vận chuyển thu tiền'}
+                              </div>
+                            )}
                           </div>
                         </div>
                       )}

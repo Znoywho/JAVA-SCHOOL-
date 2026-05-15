@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router';
+import { Navigate, Routes, Route, useLocation } from 'react-router';
 import { Navigation } from './components/Navigation';
 import { HeroSection } from './components/HeroSection';
 import { MostRequested } from './components/MostRequested';
@@ -16,6 +16,7 @@ import { WishlistPage } from './components/WishlistPage';
 import { MyOrdersPage } from './components/MyOrdersPage';
 import { OrderDetailPage } from './components/OrderDetailPage';
 import { InspectorDashboard } from './components/InspectorDashboard';
+import { ShipperPortal } from './components/ShipperPortal';
 import { ChatPage } from './components/ChatPage';
 
 function HomePage() {
@@ -32,9 +33,12 @@ function HomePage() {
 }
 
 export default function App() {
+  const location = useLocation();
+  const isShipperPortal = location.pathname.startsWith('/shipper');
+
   return (
     <div className="min-h-screen bg-white">
-      <Navigation />
+      {!isShipperPortal && <Navigation />}
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/products" element={<ProductListPage />} />
@@ -47,8 +51,11 @@ export default function App() {
         <Route path="/chat" element={<ChatPage />} />
         <Route path="/seller/dashboard" element={<SellerDashboard />} />
         <Route path="/inspector/dashboard" element={<InspectorDashboard />} />
+        <Route path="/shipping/dashboard" element={<Navigate to="/shipper" replace />} />
+        <Route path="/shipper" element={<ShipperPortal />} />
+        <Route path="/shipper/login" element={<ShipperPortal />} />
       </Routes>
-      <Footer />
+      {!isShipperPortal && <Footer />}
     </div>
   );
 }

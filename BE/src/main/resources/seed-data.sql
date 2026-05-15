@@ -6,8 +6,8 @@
 -- Cách chạy: psql -h localhost -p 5432 -U postgres -d rebikedatabase -f seed-data.sql
 -- ============================================================
 
--- ==================== 1. USERS (10 users) ====================
--- Roles: BUYER, SELLER, INSPECTOR, ADMIN
+-- ==================== 1. USERS (12 users) ====================
+-- Roles: BUYER, SELLER, INSPECTOR, SHIPPER, ADMIN
 -- Table: users (id, name, email, phone, password, role, created_at)
 
 INSERT INTO users (id, name, email, phone, password, role, created_at) VALUES
@@ -27,7 +27,11 @@ INSERT INTO users (id, name, email, phone, password, role, created_at) VALUES
 
 -- 2 INSPECTOR
 (9, 'Đỗ Quốc Kiểm Định',   'inspector1@rebike.vn',    '0944000001', 'inspect123', 'INSPECTOR', NOW()),
-(10, 'Huỳnh Văn Kỹ Thuật', 'inspector2@rebike.vn',    '0944000002', 'inspect123', 'INSPECTOR', NOW())
+(10, 'Huỳnh Văn Kỹ Thuật', 'inspector2@rebike.vn',    '0944000002', 'inspect123', 'INSPECTOR', NOW()),
+
+-- 2 SHIPPER / SHIPPING COMPANY
+(11, 'GHTK COD Desk',       'ghtk@rebike.vn',          '0955000001', 'shipper123', 'SHIPPER',   NOW()),
+(12, 'GHN COD Desk',        'ghn@rebike.vn',           '0955000002', 'shipper123', 'SHIPPER',   NOW())
 
 ON CONFLICT (id) DO NOTHING;
 
@@ -153,11 +157,12 @@ SELECT setval(pg_get_serial_sequence('product_reviews', 'id'), COALESCE(MAX(id),
 
 
 -- ==================== DONE ====================
--- Tổng: 10 users, 10 brands, 5 categories, 15 products/bikes, 8 product reviews
+-- Tổng: 12 users, 10 brands, 5 categories, 15 products/bikes, 8 product reviews
 -- 
 -- Users theo role:
 --   ADMIN:     2 (id 1-2)
 --   SELLER:    3 (id 3-5)  → mỗi seller có 5 sản phẩm
 --   BUYER:     3 (id 6-8)
 --   INSPECTOR: 2 (id 9-10)
+--   SHIPPER:   2 (id 11-12)
 -- ============================================================

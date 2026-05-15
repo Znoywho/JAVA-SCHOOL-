@@ -15,4 +15,12 @@ public interface IShippingRepository extends JpaRepository<Shipping, Long> {
     List<Shipping> findByShippingCompanyId(Long shippingCompanyId);
 
     List<Shipping> findByStatus(ShippingStatus status);
+
+    List<Shipping> findAllByOrderByCreatedAtDesc();
+
+    List<Shipping> findByShippingCompanyIdOrderByCreatedAtDesc(Long shippingCompanyId);
+
+    List<Shipping> findByStatusOrderByCreatedAtDesc(ShippingStatus status);
+
+    List<Shipping> findByShippingCompanyIdAndStatusOrderByCreatedAtDesc(Long shippingCompanyId, ShippingStatus status);
 }

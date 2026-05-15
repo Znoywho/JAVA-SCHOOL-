@@ -5,7 +5,7 @@ export interface AuthUser {
   name: string;
   email: string;
   phone: string;
-  role: 'BUYER' | 'SELLER' | 'INSPECTOR' | 'ADMIN';
+  role: 'BUYER' | 'SELLER' | 'INSPECTOR' | 'SHIPPER' | 'ADMIN';
 }
 
 const STORAGE_KEY = 'rebike_user';
@@ -64,4 +64,9 @@ export function isSeller(): boolean {
 export function isAdmin(): boolean {
   const user = getCurrentUser();
   return user?.role === 'ADMIN';
+}
+
+export function isShipper(): boolean {
+  const user = getCurrentUser();
+  return user?.role === 'SHIPPER';
 }

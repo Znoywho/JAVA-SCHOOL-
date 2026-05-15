@@ -174,6 +174,14 @@ export interface ShipmentResponse {
   codAmount: number;
   trackingCode: string;
   status: string;
+  codPaymentConfirmed: boolean;
+  codPaymentConfirmedAt?: string;
+  codPaymentConfirmedBy?: string;
+  orderBillStatus?: string;
+  paymentMethod?: PaymentMethod | string;
+  orderTotalPrice?: number;
+  buyerName?: string;
+  sellerName?: string;
   createdAt: string;
   updatedAt?: string;
 }
@@ -1223,6 +1231,32 @@ export async function updateShippingStatus(shipmentId: number, status: string): 
     method: 'PATCH',
   });
   return parseApiResponse<ShipmentResponse>(response, 'Cập nhật trạng thái giao hàng thất bại');
+}
+
+export async function fetchShipments(filters: {
+  shippingCompanyId?: number;
+  status?: string;
+  onlyCod?: boolean;
+} = {}): Promise<ShipmentResponse[]> {
+  const params = new URLSearchParams();
+  if (filters.shippingCompanyId) params.set('shippingCompanyId', String(filters.shippingCompanyId));
+  if (filters.status && filters.status !== 'ALL') params.set('status', filters.status);
+  if (filters.onlyCod) params.set('onlyCod', 'true');
+
+  const query = params.toString();
+  const response = await fetch(`${BASE_URL}/shipping/shipments${query ? `?${query}` : ''}`);
+  return parseApiResponse<ShipmentResponse[]>(response, 'Không tải được danh sách vận đơn');
+}
+
+export async function confirmCodPayment(shipmentId: number, confirmedBy?: string): Promise<ShipmentResponse> {
+  const params = new URLSearchParams();
+  if (confirmedBy) params.set('confirmedBy', confirmedBy);
+
+  const query = params.toString();
+  const response = await fetch(`${BASE_URL}/shipping/${shipmentId}/cod-payment/confirm${query ? `?${query}` : ''}`, {
+    method: 'PATCH',
+  });
+  return parseApiResponse<ShipmentResponse>(response, 'Xác nhận thanh toán COD thất bại');
 }
 
 // ==================== Inspector Reports API ====================
