@@ -31,12 +31,13 @@ import {
   type ShippingCompany,
 } from '../services/api';
 
-type QueueTab = 'collect' | 'onroad' | 'done' | 'all';
+type QueueTab = 'ready' | 'collect' | 'onroad' | 'done' | 'all';
 
 const QUEUE_TABS: Array<{ value: QueueTab; label: string }> = [
+  { value: 'ready', label: 'Chờ lấy hàng' },
   { value: 'collect', label: 'Cần thu COD' },
   { value: 'onroad', label: 'Đang giao' },
-  { value: 'done', label: 'Đã thu tiền' },
+  { value: 'done', label: 'Hoàn tất' },
   { value: 'all', label: 'Tất cả' },
 ];
 
@@ -122,7 +123,7 @@ function ShipperLogin({ onLoggedIn }: { onLoggedIn: (user: AuthUser) => void }) 
             </div>
             <div>
               <p className="text-xl font-bold text-gray-950">REBIKE Logistics</p>
-              <p className="text-sm text-gray-500">COD operation portal</p>
+              <p className="text-sm text-gray-500">Delivery operation portal</p>
             </div>
           </div>
 
@@ -132,7 +133,7 @@ function ShipperLogin({ onLoggedIn }: { onLoggedIn: (user: AuthUser) => void }) 
               Shipper Portal
             </div>
             <h1 className="text-4xl font-bold leading-tight text-gray-950">
-              Theo dõi vận đơn, thu COD, xác nhận thanh toán.
+              Theo dõi vận đơn, thu COD, giao đơn đã thanh toán.
             </h1>
             <div className="mt-8 grid grid-cols-3 gap-3">
               {[
@@ -167,7 +168,7 @@ function ShipperLogin({ onLoggedIn }: { onLoggedIn: (user: AuthUser) => void }) 
             </div>
 
             <h2 className="text-xl font-bold text-gray-950">Đăng nhập shipper</h2>
-            <p className="mt-1 text-sm text-gray-500">Dành cho đơn vị vận chuyển và đối soát COD.</p>
+            <p className="mt-1 text-sm text-gray-500">Dành cho đơn vị vận chuyển và đối soát thanh toán.</p>
 
             {error && (
               <div className="mt-5 flex items-start gap-2 rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-sm text-red-700">
@@ -222,7 +223,7 @@ export function ShipperPortal() {
   });
   const [companies, setCompanies] = useState<ShippingCompany[]>([]);
   const [shipments, setShipments] = useState<ShipmentResponse[]>([]);
-  const [activeTab, setActiveTab] = useState<QueueTab>('collect');
+  const [activeTab, setActiveTab] = useState<QueueTab>('ready');
   const [selectedCompanyId, setSelectedCompanyId] = useState<number | 'ALL'>('ALL');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
@@ -243,7 +244,7 @@ export function ShipperPortal() {
 
   const loadCompanies = async () => {
     try {
-      setCompanies(await fetchShippingCompanies('COD'));
+      setCompanies(await fetchShippingCompanies('BANK_TRANSFER'));
     } catch (err: any) {
       showMessage('error', err.message || 'Không tải được đơn vị vận chuyển');
     }
@@ -255,7 +256,7 @@ export function ShipperPortal() {
       setShipments(await fetchShipments({
         shippingCompanyId: selectedCompanyId === 'ALL' ? undefined : selectedCompanyId,
         status: statusFilter,
-        onlyCod: true,
+        readyOnly: true,
       }));
     } catch (err: any) {
       showMessage('error', err.message || 'Không tải được vận đơn');
@@ -309,13 +310,17 @@ export function ShipperPortal() {
 
   const stats = useMemo(() => {
     const needCollect = shipments.filter(item => canConfirmCod(item));
+    const ready = shipments.filter(item => ['PENDING', 'AWAITING_PICKUP'].includes(item.status));
     const onRoad = shipments.filter(item =>
-      ['AWAITING_PICKUP', 'PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY'].includes(item.status)
+      ['PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY'].includes(item.status)
     );
-    const done = shipments.filter(item => item.codPaymentConfirmed);
+    const done = shipments.filter(item =>
+      item.status === 'DELIVERED' && (item.paymentMethod !== 'COD' || item.codPaymentConfirmed)
+    );
 
     return {
       total: shipments.length,
+      ready: ready.length,
       needCollect: needCollect.length,
       onRoad: onRoad.length,
       done: done.length,
@@ -328,9 +333,10 @@ export function ShipperPortal() {
 
     return shipments
       .filter(item => {
+        if (activeTab === 'ready') return ['PENDING', 'AWAITING_PICKUP'].includes(item.status);
         if (activeTab === 'collect') return canConfirmCod(item);
-        if (activeTab === 'onroad') return ['AWAITING_PICKUP', 'PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY'].includes(item.status);
-        if (activeTab === 'done') return item.codPaymentConfirmed;
+        if (activeTab === 'onroad') return ['PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY'].includes(item.status);
+        if (activeTab === 'done') return item.status === 'DELIVERED' && (item.paymentMethod !== 'COD' || item.codPaymentConfirmed);
         return true;
       })
       .filter(item => {
@@ -388,7 +394,7 @@ export function ShipperPortal() {
           <div>
             <h1 className="text-2xl font-bold text-gray-950">Bàn làm việc shipper</h1>
             <p className="mt-1 text-sm text-gray-500">
-              Quản lý lộ trình giao hàng và xác nhận thanh toán COD.
+              Quản lý lộ trình giao hàng, thu COD khi cần và giao đơn đã thanh toán.
             </p>
           </div>
 
@@ -414,8 +420,12 @@ export function ShipperPortal() {
 
         <section className="mb-5 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-5">
           <div className="rounded-lg border border-gray-200 bg-white p-4">
-            <p className="text-xs text-gray-500">Tổng vận đơn COD</p>
+            <p className="text-xs text-gray-500">Tổng vận đơn sẵn sàng</p>
             <p className="mt-2 text-2xl font-bold text-gray-950">{stats.total}</p>
+          </div>
+          <div className="rounded-lg border border-blue-100 bg-white p-4">
+            <p className="text-xs text-gray-500">Chờ lấy hàng</p>
+            <p className="mt-2 text-2xl font-bold text-blue-600">{stats.ready}</p>
           </div>
           <div className="rounded-lg border border-amber-100 bg-white p-4">
             <p className="text-xs text-gray-500">Cần thu COD</p>
@@ -426,12 +436,8 @@ export function ShipperPortal() {
             <p className="mt-2 text-2xl font-bold text-indigo-600">{stats.onRoad}</p>
           </div>
           <div className="rounded-lg border border-emerald-100 bg-white p-4">
-            <p className="text-xs text-gray-500">Đã thu tiền</p>
+            <p className="text-xs text-gray-500">Hoàn tất</p>
             <p className="mt-2 text-2xl font-bold text-emerald-600">{stats.done}</p>
-          </div>
-          <div className="rounded-lg border border-red-100 bg-white p-4">
-            <p className="text-xs text-gray-500">Tiền cần thu</p>
-            <p className="mt-2 text-lg font-bold text-red-600">{formatPrice(stats.needCollectAmount)}</p>
           </div>
         </section>
 
@@ -478,6 +484,8 @@ export function ShipperPortal() {
             const selected = activeTab === tab.value;
             const count = tab.value === 'collect'
               ? stats.needCollect
+              : tab.value === 'ready'
+              ? stats.ready
               : tab.value === 'onroad'
               ? stats.onRoad
               : tab.value === 'done'
@@ -516,6 +524,7 @@ export function ShipperPortal() {
               const statusMeta = STATUS_META[shipment.status] ?? STATUS_META.PENDING;
               const nextAction = getNextAction(shipment.status);
               const working = actionId === shipment.id;
+              const isCodShipment = shipment.paymentMethod === 'COD';
 
               return (
                 <article key={shipment.id} className="rounded-lg border border-gray-200 bg-white p-4">
@@ -527,12 +536,14 @@ export function ShipperPortal() {
                           {statusMeta.label}
                         </span>
                         <span className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-semibold ${
-                          shipment.codPaymentConfirmed
+                          !isCodShipment || shipment.codPaymentConfirmed
                             ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
                             : 'border-amber-200 bg-amber-50 text-amber-700'
                         }`}>
-                          {shipment.codPaymentConfirmed ? <CheckCircle2 size={13} /> : <Clock size={13} />}
-                          {shipment.codPaymentConfirmed ? 'Đã thu COD' : 'Chờ thu COD'}
+                          {!isCodShipment || shipment.codPaymentConfirmed ? <CheckCircle2 size={13} /> : <Clock size={13} />}
+                          {isCodShipment
+                            ? shipment.codPaymentConfirmed ? 'Đã thu COD' : 'Chờ thu COD'
+                            : 'Đã thanh toán'}
                         </span>
                       </div>
 
@@ -561,8 +572,8 @@ export function ShipperPortal() {
                         <div className="flex items-start gap-2">
                           <Banknote size={16} className="mt-0.5 text-gray-400" />
                           <div>
-                            <p className="text-xs text-gray-500">Tiền COD</p>
-                            <p className="font-bold text-red-600">{formatPrice(shipment.codAmount)}</p>
+                            <p className="text-xs text-gray-500">{isCodShipment ? 'Tiền COD' : 'Tổng đơn'}</p>
+                            <p className="font-bold text-red-600">{formatPrice(isCodShipment ? shipment.codAmount : shipment.orderTotalPrice ?? 0)}</p>
                           </div>
                         </div>
                       </div>
@@ -597,7 +608,12 @@ export function ShipperPortal() {
                         </button>
                       )}
 
-                      {shipment.codPaymentConfirmed ? (
+                      {!isCodShipment ? (
+                        <div className="rounded-lg border border-emerald-100 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+                          <p className="font-semibold">Đơn đã thanh toán</p>
+                          <p className="mt-0.5 text-xs">Không cần thu COD khi giao.</p>
+                        </div>
+                      ) : shipment.codPaymentConfirmed ? (
                         <div className="rounded-lg border border-emerald-100 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
                           <p className="font-semibold">Đã thanh toán COD</p>
                           <p className="mt-0.5 text-xs">

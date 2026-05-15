@@ -120,7 +120,7 @@ public class ShippingService implements IShippingService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ShipmentResponse> listShipments(Long shippingCompanyId, ShippingStatus status, boolean onlyCod) {
+    public List<ShipmentResponse> listShipments(Long shippingCompanyId, ShippingStatus status, boolean onlyCod, boolean readyOnly) {
         List<Shipping> shipments;
         if (shippingCompanyId != null && status != null) {
             shipments = shippingRepository.findByShippingCompanyIdAndStatusOrderByCreatedAtDesc(shippingCompanyId, status);
@@ -134,6 +134,7 @@ public class ShippingService implements IShippingService {
 
         return shipments.stream()
                 .filter(shipping -> !onlyCod || isCod(shipping.getOrder().getPaymentMethod()))
+                .filter(shipping -> !readyOnly || isReadyForShipper(shipping))
                 .map(this::mapToResponse)
                 .toList();
     }
@@ -148,6 +149,10 @@ public class ShippingService implements IShippingService {
     public ShipmentResponse updateShipmentStatus(Long shipmentId, ShippingStatus status) {
         Shipping shipping = shippingRepository.findById(shipmentId)
                 .orElseThrow(() -> new IllegalArgumentException("Shipment không tồn tại: " + shipmentId));
+
+        if (!isReadyForShipper(shipping)) {
+            throw new IllegalArgumentException("Don chuyen khoan chua duoc admin xac nhan thanh toan");
+        }
 
         shipping.setStatus(status);
         syncOrderStatus(shipping);
@@ -175,9 +180,21 @@ public class ShippingService implements IShippingService {
 
         order.setStatus(OrderStatus.DELIVERED);
         order.setBillStatus(BillStatus.PAID);
+        order.setPaymentConfirmedAt(LocalDateTime.now());
+        order.setPaymentConfirmedBy(isBlank(confirmedBy) ? "Don vi van chuyen" : confirmedBy.trim());
         orderRepository.save(order);
 
         return mapToResponse(shippingRepository.save(shipping));
+    }
+
+    @Override
+    public void releaseShipmentForOrder(Order order) {
+        shippingRepository.findByOrderId(order.getId()).ifPresent(shipping -> {
+            if (shipping.getStatus() == ShippingStatus.PENDING) {
+                shipping.setStatus(ShippingStatus.AWAITING_PICKUP);
+                shippingRepository.save(shipping);
+            }
+        });
     }
 
     @Override
@@ -281,6 +298,15 @@ public class ShippingService implements IShippingService {
 
     private boolean isCod(String paymentMethod) {
         return paymentMethod != null && paymentMethod.toUpperCase(Locale.ROOT).equals("COD");
+    }
+
+    private boolean isReadyForShipper(Shipping shipping) {
+        if (shipping.getStatus() == ShippingStatus.CANCELLED || shipping.getStatus() == ShippingStatus.RETURNED) {
+            return false;
+        }
+
+        Order order = shipping.getOrder();
+        return isCod(order.getPaymentMethod()) || order.getBillStatus() == BillStatus.PAID;
     }
 
     private String generateTrackingCode(Order order, ShippingCompany company) {

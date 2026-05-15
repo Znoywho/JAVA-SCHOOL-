@@ -17,6 +17,8 @@ public class OrderResponse {
     private double shippingFee;
     private ShipmentResponse shipment;
     private LocalDateTime createdAt;
+    private LocalDateTime paymentConfirmedAt;
+    private String paymentConfirmedBy;
     private List<OrderDetailResponse> items;
 
     public Long getId() { return id; }
@@ -57,6 +59,12 @@ public class OrderResponse {
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public LocalDateTime getPaymentConfirmedAt() { return paymentConfirmedAt; }
+    public void setPaymentConfirmedAt(LocalDateTime paymentConfirmedAt) { this.paymentConfirmedAt = paymentConfirmedAt; }
+
+    public String getPaymentConfirmedBy() { return paymentConfirmedBy; }
+    public void setPaymentConfirmedBy(String paymentConfirmedBy) { this.paymentConfirmedBy = paymentConfirmedBy; }
 
     public List<OrderDetailResponse> getItems() { return items; }
     public void setItems(List<OrderDetailResponse> items) { this.items = items; }

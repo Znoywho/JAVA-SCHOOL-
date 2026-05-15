@@ -66,6 +66,16 @@ const BILL_STATUS_LABELS: Record<string, string> = {
   CANCELLED: 'Đã hủy',
 };
 
+const BANK_TRANSFER_INFO = {
+  bankName: 'Vietcombank',
+  accountNumber: '1023456789',
+  accountName: 'REBIKE MARKET',
+};
+
+function getBankTransferContent(orderId: number): string {
+  return `REBIKE-${orderId}`;
+}
+
 /* ── Component ──────────────────────────────────────────── */
 
 export function OrderDetailPage() {
@@ -124,6 +134,8 @@ export function OrderDetailPage() {
   const waitingCodConfirmation = order?.paymentMethod === 'COD'
     && order?.billStatus !== 'PAID'
     && shipment?.status === 'DELIVERED';
+  const waitingBankConfirmation = order?.paymentMethod === 'BANK_TRANSFER'
+    && order?.billStatus === 'PENDING';
 
   const orderStatusStyle = ORDER_STATUS_STYLE[order?.orderStatus ?? 'PENDING'] ?? ORDER_STATUS_STYLE.PENDING;
   const paymentInfo = PAYMENT_LABELS[order?.paymentMethod ?? ''] ?? PAYMENT_LABELS.COD;
@@ -401,9 +413,27 @@ export function OrderDetailPage() {
                 <span className={`font-semibold ${
                   order.billStatus === 'PAID' ? 'text-emerald-600' : order.billStatus === 'CANCELLED' ? 'text-red-600' : 'text-amber-600'
                 }`}>
-                  {waitingCodConfirmation ? 'Chờ đơn vị vận chuyển xác nhận COD' : BILL_STATUS_LABELS[order.billStatus] ?? order.billStatus}
+                  {waitingCodConfirmation
+                    ? 'Chờ đơn vị vận chuyển xác nhận COD'
+                    : waitingBankConfirmation
+                    ? 'Chờ admin xác nhận chuyển khoản'
+                    : BILL_STATUS_LABELS[order.billStatus] ?? order.billStatus}
                 </span>
               </div>
+
+              {waitingBankConfirmation && (
+                <div className="mt-4 rounded-lg border border-blue-100 bg-blue-50 p-4 text-sm text-blue-900">
+                  <p className="font-semibold">Thông tin chuyển khoản</p>
+                  <div className="mt-2 grid gap-1 sm:grid-cols-3">
+                    <span>{BANK_TRANSFER_INFO.bankName}</span>
+                    <span>STK: {BANK_TRANSFER_INFO.accountNumber}</span>
+                    <span>{BANK_TRANSFER_INFO.accountName}</span>
+                  </div>
+                  <p className="mt-2 text-xs text-blue-700">
+                    Nội dung CK: <span className="font-mono font-semibold">{getBankTransferContent(order.id)}</span>. Sau khi admin xác nhận, đơn sẽ chuyển sang shipper.
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* ── Seller info ── */}

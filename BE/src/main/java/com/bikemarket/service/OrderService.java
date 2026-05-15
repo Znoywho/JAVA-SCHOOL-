@@ -9,7 +9,10 @@ import com.bikemarket.repository.UserRepository;
 import com.bikemarket.repository.ProductRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 @Service
@@ -91,6 +94,19 @@ public class OrderService implements IOrderService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<OrderResponse> getOrders(String paymentMethod, BillStatus billStatus) {
+        return orderRepository.findAll()
+                .stream()
+                .filter(order -> paymentMethod == null || paymentMethod.isBlank()
+                        || paymentMethod.equalsIgnoreCase(order.getPaymentMethod()))
+                .filter(order -> billStatus == null || order.getBillStatus() == billStatus)
+                .sorted(Comparator.comparing(Order::getCreated_at, Comparator.nullsLast(Comparator.naturalOrder())).reversed())
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public List<OrderResponse> getOrdersByBuyer(Long buyerId) {
         return orderRepository.findByBuyerId(buyerId)
                 .stream().map(this::mapToResponse).collect(Collectors.toList());
@@ -116,12 +132,26 @@ public class OrderService implements IOrderService {
                 .orElseThrow(() -> new RuntimeException("Order không tồn tại: " + orderId));
 
         if (order.getOrderStatus() == OrderStatus.CANCELLED) {
-            throw new RuntimeException("Không thể thanh toán đơn đã hủy");
+            throw new IllegalArgumentException("Không thể thanh toán đơn đã hủy");
         }
 
-        order.setBillStatus(BillStatus.PAID);
-        order.setStatus(OrderStatus.CONFIRMED);
-        return mapToResponse(orderRepository.save(order));
+        if (isBankTransfer(order.getPaymentMethod())) {
+            throw new IllegalArgumentException("Don chuyen khoan can admin xac nhan thanh toan");
+        }
+
+        return markOrderAsPaid(order, "Online payment");
+    }
+
+    @Override
+    public OrderResponse confirmBankTransfer(Long orderId, String confirmedBy) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order khong ton tai: " + orderId));
+
+        if (!isBankTransfer(order.getPaymentMethod())) {
+            throw new IllegalArgumentException("Chi don chuyen khoan ngan hang moi can admin xac nhan");
+        }
+
+        return markOrderAsPaid(order, isBlank(confirmedBy) ? "Admin" : confirmedBy.trim());
     }
 
     @Override
@@ -146,6 +176,24 @@ public class OrderService implements IOrderService {
         orderRepository.save(order);
     }
 
+    private OrderResponse markOrderAsPaid(Order order, String confirmedBy) {
+        if (order.getOrderStatus() == OrderStatus.CANCELLED) {
+            throw new IllegalArgumentException("Khong the thanh toan don da huy");
+        }
+        if (order.getBillStatus() == BillStatus.PAID) {
+            return mapToResponse(order);
+        }
+
+        order.setBillStatus(BillStatus.PAID);
+        order.setStatus(OrderStatus.CONFIRMED);
+        order.setPaymentConfirmedAt(LocalDateTime.now());
+        order.setPaymentConfirmedBy(confirmedBy);
+
+        Order savedOrder = orderRepository.save(order);
+        shippingService.releaseShipmentForOrder(savedOrder);
+        return mapToResponse(savedOrder);
+    }
+
     private OrderResponse mapToResponse(Order order) {
         OrderResponse res = new OrderResponse();
         res.setId(order.getId());
@@ -158,6 +206,8 @@ public class OrderService implements IOrderService {
         res.setBillStatus(order.getBillStatus().name());
         res.setPaymentMethod(order.getPaymentMethod());
         res.setCreatedAt(order.getCreated_at());
+        res.setPaymentConfirmedAt(order.getPaymentConfirmedAt());
+        res.setPaymentConfirmedBy(order.getPaymentConfirmedBy());
 
         List<OrderDetailResponse> items = order.getOrderDetails().stream().map(d -> {
             OrderDetailResponse dr = new OrderDetailResponse();
@@ -176,6 +226,14 @@ public class OrderService implements IOrderService {
         res.setShippingFee(Math.max(0, order.getTotalPrice() - productTotal));
         shippingService.getShipmentByOrder(order.getId()).ifPresent(res::setShipment);
         return res;
+    }
+
+    private boolean isBankTransfer(String paymentMethod) {
+        return paymentMethod != null && paymentMethod.toUpperCase(Locale.ROOT).equals("BANK_TRANSFER");
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
     }
 
     @Override

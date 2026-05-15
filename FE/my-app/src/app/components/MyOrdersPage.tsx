@@ -15,6 +15,7 @@ import {
   Copy,
   Check,
   MessageCircle,
+  Banknote,
 } from 'lucide-react';
 import { getCurrentUser } from '../services/auth';
 import {
@@ -289,6 +290,15 @@ export function MyOrdersPage() {
                             <span>{order.shipment.shippingAddress}</span>
                           </div>
                         )}
+                      </div>
+                    )}
+
+                    {order.paymentMethod === 'BANK_TRANSFER' && order.billStatus === 'PENDING' && (
+                      <div className="mb-4 flex items-start gap-2 rounded-lg border border-blue-100 bg-blue-50 p-3 text-sm text-blue-800">
+                        <Banknote size={15} className="mt-0.5 shrink-0" />
+                        <span>
+                          Chờ admin xác nhận chuyển khoản. Nội dung CK: <span className="font-mono font-semibold">REBIKE-{order.id}</span>
+                        </span>
                       </div>
                     )}
 

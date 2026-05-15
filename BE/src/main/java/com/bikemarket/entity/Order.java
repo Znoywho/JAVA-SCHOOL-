@@ -55,6 +55,12 @@ public class Order {
   @Column(name = "payment_method")
   private String paymentMethod;
 
+  @Column(name = "payment_confirmed_at")
+  private LocalDateTime paymentConfirmedAt;
+
+  @Column(name = "payment_confirmed_by", length = 120)
+  private String paymentConfirmedBy;
+
   @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<OrderDetail> orderDetails = new ArrayList<>();
 
@@ -106,6 +112,14 @@ public class Order {
     return this.billStatus;
   }
 
+  public LocalDateTime getPaymentConfirmedAt() {
+    return paymentConfirmedAt;
+  }
+
+  public String getPaymentConfirmedBy() {
+    return paymentConfirmedBy;
+  }
+
 
   public void setBuyer(User buyer) {
     this.buyer = buyer;
@@ -139,6 +153,14 @@ public class Order {
 
   public void setBillStatus(BillStatus billStatus) {
     this.billStatus = billStatus;
+  }
+
+  public void setPaymentConfirmedAt(LocalDateTime paymentConfirmedAt) {
+    this.paymentConfirmedAt = paymentConfirmedAt;
+  }
+
+  public void setPaymentConfirmedBy(String paymentConfirmedBy) {
+    this.paymentConfirmedBy = paymentConfirmedBy;
   }
 }
 

@@ -51,9 +51,10 @@ public class ShippingController {
     public ResponseEntity<ApiResponse<List<ShipmentResponse>>> listShipments(
             @RequestParam(required = false) Long shippingCompanyId,
             @RequestParam(required = false) ShippingStatus status,
-            @RequestParam(defaultValue = "false") boolean onlyCod) {
+            @RequestParam(defaultValue = "false") boolean onlyCod,
+            @RequestParam(defaultValue = "false") boolean readyOnly) {
         return ResponseEntity.ok(ApiResponse.ok(
-                shippingService.listShipments(shippingCompanyId, status, onlyCod),
+                shippingService.listShipments(shippingCompanyId, status, onlyCod, readyOnly),
                 "Shipments retrieved successfully"
         ));
     }

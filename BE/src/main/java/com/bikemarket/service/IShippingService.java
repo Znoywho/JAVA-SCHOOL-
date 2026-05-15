@@ -15,13 +15,15 @@ public interface IShippingService {
 
     Shipping createShipmentForOrder(Order order, ShippingSelectionDTO selection, double orderSubtotal);
 
-    List<ShipmentResponse> listShipments(Long shippingCompanyId, ShippingStatus status, boolean onlyCod);
+    List<ShipmentResponse> listShipments(Long shippingCompanyId, ShippingStatus status, boolean onlyCod, boolean readyOnly);
 
     Optional<ShipmentResponse> getShipmentByOrder(Long orderId);
 
     ShipmentResponse updateShipmentStatus(Long shipmentId, ShippingStatus status);
 
     ShipmentResponse confirmCodPayment(Long shipmentId, String confirmedBy);
+
+    void releaseShipmentForOrder(Order order);
 
     void cancelShipmentForOrder(Order order);
 

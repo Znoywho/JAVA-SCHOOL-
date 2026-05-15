@@ -209,6 +209,8 @@ export interface OrderResponse {
   shippingFee: number;
   shipment?: ShipmentResponse;
   createdAt: string;
+  paymentConfirmedAt?: string;
+  paymentConfirmedBy?: string;
   items: OrderDetailResponse[];
 }
 
@@ -1212,6 +1214,30 @@ export async function fetchSellerOrders(sellerId: number): Promise<OrderResponse
   return parseApiResponse<OrderResponse[]>(response, 'Không tải được đơn hàng');
 }
 
+export async function fetchAdminOrders(filters: {
+  paymentMethod?: PaymentMethod | string;
+  billStatus?: string;
+} = {}): Promise<OrderResponse[]> {
+  const params = new URLSearchParams();
+  if (filters.paymentMethod && filters.paymentMethod !== 'ALL') params.set('paymentMethod', filters.paymentMethod);
+  if (filters.billStatus && filters.billStatus !== 'ALL') params.set('billStatus', filters.billStatus);
+
+  const query = params.toString();
+  const response = await fetch(`${BASE_URL}/admin/orders${query ? `?${query}` : ''}`);
+  return parseApiResponse<OrderResponse[]>(response, 'Khong tai duoc danh sach don admin');
+}
+
+export async function confirmBankTransfer(orderId: number, confirmedBy?: string): Promise<OrderResponse> {
+  const params = new URLSearchParams();
+  if (confirmedBy) params.set('confirmedBy', confirmedBy);
+
+  const query = params.toString();
+  const response = await fetch(`${BASE_URL}/admin/orders/${orderId}/bank-transfer/confirm${query ? `?${query}` : ''}`, {
+    method: 'PATCH',
+  });
+  return parseApiResponse<OrderResponse>(response, 'Xac nhan chuyen khoan that bai');
+}
+
 export async function cancelOrder(orderId: number): Promise<void> {
   const response = await fetch(`${BASE_URL}/orders/${orderId}/cancel`, {
     method: 'PUT',
@@ -1237,11 +1263,13 @@ export async function fetchShipments(filters: {
   shippingCompanyId?: number;
   status?: string;
   onlyCod?: boolean;
+  readyOnly?: boolean;
 } = {}): Promise<ShipmentResponse[]> {
   const params = new URLSearchParams();
   if (filters.shippingCompanyId) params.set('shippingCompanyId', String(filters.shippingCompanyId));
   if (filters.status && filters.status !== 'ALL') params.set('status', filters.status);
   if (filters.onlyCod) params.set('onlyCod', 'true');
+  if (filters.readyOnly) params.set('readyOnly', 'true');
 
   const query = params.toString();
   const response = await fetch(`${BASE_URL}/shipping/shipments${query ? `?${query}` : ''}`);

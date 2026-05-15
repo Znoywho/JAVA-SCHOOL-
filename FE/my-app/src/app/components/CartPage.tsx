@@ -51,7 +51,7 @@ const PAYMENT_OPTIONS: Array<{
   {
     value: 'BANK_TRANSFER',
     label: 'Chuyển khoản ngân hàng',
-    description: 'Mô phỏng thanh toán chuyển khoản và xác nhận ngay.',
+    description: 'Tạo đơn chờ admin xác nhận, sau đó mới chuyển cho shipper.',
     icon: Banknote,
   },
   {
@@ -61,6 +61,16 @@ const PAYMENT_OPTIONS: Array<{
     icon: CreditCard,
   },
 ];
+
+const BANK_TRANSFER_INFO = {
+  bankName: 'Vietcombank',
+  accountNumber: '1023456789',
+  accountName: 'REBIKE MARKET',
+};
+
+function getBankTransferContent(orderId: number): string {
+  return `REBIKE-${orderId}`;
+}
 
 type SellerCartGroup = {
   sellerId: number;
@@ -258,7 +268,7 @@ export function CartPage() {
           })),
         });
 
-        orders.push(paymentMethod === 'COD' ? order : await payOrder(order.id));
+        orders.push(paymentMethod === 'CARD' ? await payOrder(order.id) : order);
       }
 
       await clearCart(user.id);
@@ -312,13 +322,30 @@ export function CartPage() {
               </div>
               <div className="flex-1">
                 <h2 className="text-xl font-bold text-gray-900">
-                  {paymentMethod === 'COD' ? 'Đặt hàng thành công' : 'Thanh toán thành công'}
+                  {paymentMethod === 'COD'
+                    ? 'Đặt hàng thành công'
+                    : paymentMethod === 'BANK_TRANSFER'
+                    ? 'Đơn đang chờ xác nhận chuyển khoản'
+                    : 'Thanh toán thành công'}
                 </h2>
                 <p className="mt-1 text-sm text-gray-600">
                   Đã tạo {createdOrders.length} đơn hàng. Phương thức: {
                     PAYMENT_OPTIONS.find(option => option.value === paymentMethod)?.label
                   }.
                 </p>
+                {paymentMethod === 'BANK_TRANSFER' && (
+                  <div className="mt-4 rounded-lg border border-blue-100 bg-blue-50 p-4 text-sm text-blue-900">
+                    <p className="font-semibold">Thông tin chuyển khoản</p>
+                    <div className="mt-2 grid gap-1 sm:grid-cols-3">
+                      <span>Ngân hàng: {BANK_TRANSFER_INFO.bankName}</span>
+                      <span>STK: {BANK_TRANSFER_INFO.accountNumber}</span>
+                      <span>Chủ TK: {BANK_TRANSFER_INFO.accountName}</span>
+                    </div>
+                    <p className="mt-2 text-xs text-blue-700">
+                      Nội dung chuyển khoản theo từng đơn: <span className="font-mono">{createdOrders.map(order => getBankTransferContent(order.id)).join(', ')}</span>. Admin xác nhận xong thì đơn sẽ qua cổng shipper.
+                    </p>
+                  </div>
+                )}
                 <div className="mt-5 divide-y divide-gray-100 rounded-lg border border-gray-100">
                   {createdOrders.map(order => (
                     <div key={order.id} className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
@@ -336,7 +363,13 @@ export function CartPage() {
                       <div className="text-left sm:text-right">
                         <p className="font-bold text-red-600">{formatPrice(order.totalPrice)}</p>
                         <p className="text-xs text-gray-500">
-                          {order.billStatus === 'PAID' ? 'Đã thanh toán' : paymentMethod === 'COD' ? 'Chờ thu COD' : 'Chờ thanh toán'} · {order.shipment?.status ?? 'PENDING'}
+                          {order.billStatus === 'PAID'
+                            ? 'Đã thanh toán'
+                            : paymentMethod === 'COD'
+                            ? 'Chờ thu COD'
+                            : paymentMethod === 'BANK_TRANSFER'
+                            ? 'Chờ admin xác nhận CK'
+                            : 'Chờ thanh toán'} · {order.shipment?.status ?? 'PENDING'}
                         </p>
                       </div>
                     </div>
@@ -589,6 +622,14 @@ export function CartPage() {
                     );
                   })}
                 </div>
+                {paymentMethod === 'BANK_TRANSFER' && (
+                  <div className="mt-3 rounded-lg border border-blue-100 bg-blue-50 p-3 text-xs leading-5 text-blue-800">
+                    <p className="font-semibold text-blue-900">Chuyển khoản ngân hàng</p>
+                    <p>{BANK_TRANSFER_INFO.bankName} · {BANK_TRANSFER_INFO.accountNumber}</p>
+                    <p>{BANK_TRANSFER_INFO.accountName}</p>
+                    <p className="mt-1">Sau khi đặt đơn, dùng mã từng đơn làm nội dung CK để admin đối soát.</p>
+                  </div>
+                )}
               </div>
 
               <button
@@ -597,7 +638,7 @@ export function CartPage() {
                 className="w-full mt-5 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {processing && <Loader2 size={18} className="animate-spin" />}
-                {processing ? 'Đang xử lý...' : 'Thanh toán'}
+                {processing ? 'Đang xử lý...' : paymentMethod === 'BANK_TRANSFER' ? 'Tạo đơn chuyển khoản' : 'Thanh toán'}
               </button>
             </aside>
           </div>

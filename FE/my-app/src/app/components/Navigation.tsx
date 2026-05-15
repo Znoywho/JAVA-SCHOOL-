@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router';
-import { Search, Heart, ShoppingCart, ChevronDown, Package, LogOut, ClipboardList, MessageCircle, Truck } from 'lucide-react';
+import { Search, Heart, ShoppingCart, ChevronDown, Package, LogOut, ClipboardList, MessageCircle, Truck, Banknote } from 'lucide-react';
 import { getCurrentUser, logout, type AuthUser } from '../services/auth';
 import { fetchCartCount, fetchWishlistCount } from '../services/api';
 
@@ -81,6 +81,16 @@ function AuthSection() {
                 Bao cao kiem dinh
               </Link>
             )}
+            {user.role === 'ADMIN' && (
+              <Link
+                to="/admin/payments"
+                onClick={() => setShowDropdown(false)}
+                className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 rounded-lg text-sm text-gray-700 transition-colors"
+              >
+                <Banknote size={16} />
+                Xác nhận chuyển khoản
+              </Link>
+            )}
             {(user.role === 'SHIPPER' || user.role === 'ADMIN') && (
               <Link
                 to="/shipper"
@@ -88,7 +98,7 @@ function AuthSection() {
                 className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 rounded-lg text-sm text-gray-700 transition-colors"
               >
                 <Truck size={16} />
-                Đối soát COD
+                Vận đơn shipper
               </Link>
             )}
             <Link
