@@ -782,7 +782,7 @@ export function AdminDashboardPage({ initialTab = 'users' }: { initialTab?: Admi
               </form>
             </section>
           </>
-        ) : (
+        ) : activeTab === 'orders' ? (
           <>
             <section className="mb-5 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
               <div className="rounded-lg border border-gray-200 bg-white p-4">

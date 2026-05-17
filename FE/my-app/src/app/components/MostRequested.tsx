@@ -1,62 +1,40 @@
+import { useEffect, useState } from 'react';
 import { ProductCard } from './ProductCard';
 import { ChevronRight } from 'lucide-react';
 import { Link } from 'react-router';
+import { fetchProducts, formatPrice, type Product } from '../services/api';
 
-const products = [
-  {
-    id: '1',
-    image: '',
-    brand: 'Pinarello',
-    category: 'Road',
-    name: 'Pinarello Dogma F 2025 Shimano Ultegra Di2 / Fulcrum Racing 718',
-    price: '45,000,000 ₫',
-    originalPrice: '55,000,000 ₫',
-    conditionPercent: 92,
-    isVerified: true,
-  },
-  {
-    id: '2',
-    image: '',
-    brand: 'Specialized',
-    category: 'Gravel',
-    name: 'Specialized Diverge STR Expert SRAM Rival AXS / Roval Terra CLX',
-    price: '38,500,000 ₫',
-    conditionPercent: 85,
-    isVerified: true,
-  },
-  {
-    id: '3',
-    image: '',
-    brand: 'Trek',
-    category: 'Road',
-    name: 'Trek Madone SLR 7 eTap AXS size 54 / Bontrager Aeolus RSL 37',
-    price: '52,000,000 ₫',
-    conditionPercent: 88,
-    isVerified: false,
-  },
-  {
-    id: '4',
-    image: '',
-    brand: 'Colnago',
-    category: 'Road',
-    name: 'Colnago V4Rs Pogačar 2025 size 52s Shimano Dura-Ace Di2 / Fulcrum',
-    price: '49,500,000 ₫',
-    conditionPercent: 95,
-    isVerified: true,
-  },
-  {
-    id: '5',
-    image: '',
-    brand: 'Giant',
-    category: 'Road',
-    name: 'Giant Propel Advanced SL Disc Shimano Dura-Ace / Cadex 42 Disc',
-    price: '42,000,000 ₫',
-    conditionPercent: 78,
-    isVerified: false,
-  }
-];
+function SkeletonCard() {
+  return (
+    <div className="bg-white rounded-xl overflow-hidden border border-gray-100 animate-pulse">
+      <div className="aspect-square bg-gray-200" />
+      <div className="p-4 space-y-3">
+        <div className="h-3 bg-gray-200 rounded w-2/3" />
+        <div className="h-4 bg-gray-200 rounded" />
+        <div className="h-4 bg-gray-200 rounded w-3/4" />
+        <div className="h-5 bg-gray-200 rounded w-1/2" />
+      </div>
+    </div>
+  );
+}
+
+function getProductImage(product: Product): string {
+  const thumbnail = product.media?.find(m => m.thumbnail && m.mediaType !== 'VIDEO');
+  const firstImage = product.media?.find(m => m.mediaType !== 'VIDEO');
+  return thumbnail?.mediaUrl || firstImage?.mediaUrl || '';
+}
 
 export function MostRequested() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchProducts(0, 5)
+      .then(data => setProducts(data.products.slice(0, 5)))
+      .catch(() => setProducts([]))
+      .finally(() => setLoading(false));
+  }, []);
+
   return (
     <section className="max-w-[1400px] mx-auto px-4 py-12">
       <div className="flex items-center justify-between mb-8">
@@ -74,9 +52,21 @@ export function MostRequested() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5">
-        {products.map((product) => (
-          <ProductCard key={product.id} {...product} />
-        ))}
+        {loading
+          ? Array.from({ length: 5 }).map((_, i) => <SkeletonCard key={i} />)
+          : products.map(product => (
+              <ProductCard
+                key={product.id}
+                id={String(product.id)}
+                image={getProductImage(product)}
+                brand={product.brand || 'Unknown'}
+                category={product.category || 'Bike'}
+                name={product.title}
+                price={formatPrice(product.price)}
+                conditionPercent={product.conditionPercent}
+                isVerified={product.isVerified}
+              />
+            ))}
       </div>
     </section>
   );

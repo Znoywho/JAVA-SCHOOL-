@@ -1,14 +1,7 @@
+import { useEffect, useState } from 'react';
 import { ChevronRight } from 'lucide-react';
 import { Link } from 'react-router';
-
-const brands = [
-  { id: '1', name: 'Pinarello', brandId: 1 },
-  { id: '2', name: 'Specialized', brandId: 2 },
-  { id: '3', name: 'Trek', brandId: 3 },
-  { id: '4', name: 'Giant', brandId: 4 },
-  { id: '5', name: 'Colnago', brandId: 5 },
-  { id: '6', name: 'Orbea', brandId: 6 },
-];
+import { fetchBrands, type Brand } from '../services/api';
 
 function BrandLogo({ name }: { name: string }) {
   return (
@@ -21,6 +14,14 @@ function BrandLogo({ name }: { name: string }) {
 }
 
 export function TopBrands() {
+  const [brands, setBrands] = useState<Brand[]>([]);
+
+  useEffect(() => {
+    fetchBrands()
+      .then(data => setBrands(data))
+      .catch(() => setBrands([]));
+  }, []);
+
   return (
     <section className="bg-gray-50 py-12">
       <div className="max-w-[1400px] mx-auto px-4">
@@ -42,7 +43,7 @@ export function TopBrands() {
           {brands.map((brand) => (
             <Link
               key={brand.id}
-              to={`/products?brand=${brand.brandId}`}
+              to={`/products?brand=${brand.id}`}
               className="group aspect-[3/2] bg-white rounded-xl overflow-hidden flex items-center justify-center p-6 hover:shadow-lg hover:shadow-gray-200/50 transition-all duration-300 cursor-pointer border border-gray-100 hover:border-blue-200 hover:-translate-y-0.5"
             >
               <BrandLogo name={brand.name} />

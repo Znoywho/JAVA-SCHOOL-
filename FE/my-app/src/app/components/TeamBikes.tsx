@@ -1,62 +1,41 @@
+import { useEffect, useState } from 'react';
 import { ProductCard } from './ProductCard';
 import { ChevronRight } from 'lucide-react';
 import { Link } from 'react-router';
+import { fetchProducts, formatPrice, type Product } from '../services/api';
 
-const teamBikes = [
-  {
-    id: '6',
-    image: '',
-    brand: 'Lapierre',
-    category: 'Road',
-    name: 'Lapierre Xelius SL 2025 size 54 SRAM Red AXS / 3T Discus C45',
-    price: '62,000,000 ₫',
-    originalPrice: '72,000,000 ₫',
-    conditionPercent: 96,
-    isVerified: true,
-  },
-  {
-    id: '7',
-    image: '',
-    brand: 'Orbea',
-    category: 'Road',
-    name: 'Orbea Orca M20iLTD 2024 size 53 Shimano Ultegra Di2 / Vision Metron',
-    price: '55,000,000 ₫',
-    conditionPercent: 89,
-    isVerified: true,
-  },
-  {
-    id: '8',
-    image: '',
-    brand: 'Cannondale',
-    category: 'Road',
-    name: 'Cannondale SuperSix EVO Hi-MOD Disc SRAM Force AXS / HollowGram',
-    price: '48,000,000 ₫',
-    conditionPercent: 82,
-    isVerified: false,
-  },
-  {
-    id: '9',
-    image: '',
-    brand: 'Bianchi',
-    category: 'Road',
-    name: 'Bianchi Oltre RC Campagnolo Super Record EPS / Fulcrum Speed 40',
-    price: '58,000,000 ₫',
-    conditionPercent: 91,
-    isVerified: true,
-  },
-  {
-    id: '10',
-    image: '',
-    brand: 'Colnago',
-    category: 'Road',
-    name: 'Colnago C68 Disc 2024 Campagnolo Super Record / Bora Ultra WTO 45',
-    price: '72,000,000 ₫',
-    conditionPercent: 97,
-    isVerified: true,
-  }
-];
+function SkeletonCard() {
+  return (
+    <div className="bg-white rounded-xl overflow-hidden border border-gray-100 animate-pulse">
+      <div className="aspect-square bg-gray-200" />
+      <div className="p-4 space-y-3">
+        <div className="h-3 bg-gray-200 rounded w-2/3" />
+        <div className="h-4 bg-gray-200 rounded" />
+        <div className="h-4 bg-gray-200 rounded w-3/4" />
+        <div className="h-5 bg-gray-200 rounded w-1/2" />
+      </div>
+    </div>
+  );
+}
+
+function getProductImage(product: Product): string {
+  const thumbnail = product.media?.find(m => m.thumbnail && m.mediaType !== 'VIDEO');
+  const firstImage = product.media?.find(m => m.mediaType !== 'VIDEO');
+  return thumbnail?.mediaUrl || firstImage?.mediaUrl || '';
+}
 
 export function TeamBikes() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Lấy trang thứ 2 (page=1) để có sản phẩm khác với MostRequested
+    fetchProducts(1, 5)
+      .then(data => setProducts(data.products.slice(0, 5)))
+      .catch(() => setProducts([]))
+      .finally(() => setLoading(false));
+  }, []);
+
   return (
     <section className="max-w-[1400px] mx-auto px-4 py-12">
       <div className="flex items-center justify-between mb-8">
@@ -74,9 +53,21 @@ export function TeamBikes() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5">
-        {teamBikes.map((bike) => (
-          <ProductCard key={bike.id} {...bike} />
-        ))}
+        {loading
+          ? Array.from({ length: 5 }).map((_, i) => <SkeletonCard key={i} />)
+          : products.map(product => (
+              <ProductCard
+                key={product.id}
+                id={String(product.id)}
+                image={getProductImage(product)}
+                brand={product.brand || 'Unknown'}
+                category={product.category || 'Bike'}
+                name={product.title}
+                price={formatPrice(product.price)}
+                conditionPercent={product.conditionPercent}
+                isVerified={product.isVerified}
+              />
+            ))}
       </div>
     </section>
   );

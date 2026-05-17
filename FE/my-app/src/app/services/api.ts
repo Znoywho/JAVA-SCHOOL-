@@ -1452,7 +1452,7 @@ export interface AdminProduct {
 export async function fetchAdminProducts(): Promise<AdminProduct[]> {
   return fetchWithFallback(
     `${BASE_URL}/admin/products/all`,
-    () => ({ products: [] }),
+    () => [] as AdminProduct[],
     (data) => {
       const raw = data.products ?? [];
       return raw.map((p: any) => ({
@@ -1494,7 +1494,7 @@ export async function deleteAdminProduct(productId: number): Promise<void> {
 export async function fetchAdminInspectorReports(): Promise<InspectorReport[]> {
   return fetchWithFallback(
     `${BASE_URL}/admin/inspector-reports`,
-    () => MOCK_REPORTS,
+    () => [] as InspectorReport[],
     (data) => Array.isArray(data) ? data.map(normalizeInspectorReport) : []
   );
 }
