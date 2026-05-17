@@ -41,6 +41,17 @@ target/
 .idea/
 .vscode/
 *.iml
+.classpath
+.factorypath
+.project
+.settings/
+
+# Frontend
+FE/my-app/node_modules/
+FE/my-app/dist/
+*.err.log
+*.out.log
 
 # OS artifacts
 .DS_Store
+Thumbs.db
