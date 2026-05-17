@@ -100,6 +100,22 @@ function AuthSection() {
                   Quản lý đơn hàng
                 </Link>
                 <Link
+                  to="/admin/products"
+                  onClick={() => setShowDropdown(false)}
+                  className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 rounded-lg text-sm text-gray-700 transition-colors"
+                >
+                  <Package size={16} />
+                  Quản lý sản phẩm
+                </Link>
+                <Link
+                  to="/admin/reports"
+                  onClick={() => setShowDropdown(false)}
+                  className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 rounded-lg text-sm text-gray-700 transition-colors"
+                >
+                  <ClipboardList size={16} />
+                  Báo cáo kiểm định
+                </Link>
+                <Link
                   to="/admin/payments"
                   onClick={() => setShowDropdown(false)}
                   className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 rounded-lg text-sm text-gray-700 transition-colors"

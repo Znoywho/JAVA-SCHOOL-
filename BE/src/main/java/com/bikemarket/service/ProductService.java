@@ -267,6 +267,11 @@ public class ProductService implements IProductService {
         return productRepository.findByPriceBetweenAndStatus(minPrice, maxPrice, ProductStatus.PUBLISHED, pageable);
     }
 
+    @Override
+    public Product adminSaveProduct(Product product) {
+        return productRepository.save(product);
+    }
+
     // =========================================================
     // Helper methods
     // =========================================================

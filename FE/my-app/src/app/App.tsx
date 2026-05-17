@@ -56,6 +56,8 @@ export default function App() {
         <Route path="/admin" element={<Navigate to="/admin/users" replace />} />
         <Route path="/admin/users" element={<AdminDashboardPage initialTab="users" />} />
         <Route path="/admin/orders" element={<AdminDashboardPage initialTab="orders" />} />
+        <Route path="/admin/products" element={<AdminDashboardPage initialTab="products" />} />
+        <Route path="/admin/reports" element={<AdminDashboardPage initialTab="reports" />} />
         <Route path="/admin/payments" element={<AdminPaymentsPage />} />
         <Route path="/shipping/dashboard" element={<Navigate to="/shipper" replace />} />
         <Route path="/shipper" element={<ShipperPortal />} />

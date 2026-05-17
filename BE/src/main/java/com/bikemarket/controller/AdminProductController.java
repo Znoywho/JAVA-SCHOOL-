@@ -4,16 +4,17 @@ import com.bikemarket.dto.ApiResponse;
 import com.bikemarket.dto.BikeResponseDTO;
 import com.bikemarket.dto.ProductResponseDTO;
 import com.bikemarket.entity.Bike;
+import com.bikemarket.entity.InspectorReport;
 import com.bikemarket.entity.Product;
+import com.bikemarket.enums.InspectorReportStatus;
+import com.bikemarket.enums.ProductStatus;
+import com.bikemarket.service.InspectorReportService;
 import com.bikemarket.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.List;
@@ -25,6 +26,9 @@ public class AdminProductController {
 
     @Autowired
     private ProductService productService;
+
+    @Autowired
+    private InspectorReportService inspectorReportService;
 
     @GetMapping("/products")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getAllProductsForAdmin(
@@ -101,6 +105,99 @@ public class AdminProductController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error("Internal Server Error", e.getMessage()));
         }
+    }
+
+    // ========== Admin Product Status Management ==========
+
+    @PatchMapping("/products/{id}/status")
+    public ResponseEntity<ApiResponse<ProductResponseDTO>> updateProductStatusByAdmin(
+            @PathVariable long id,
+            @RequestParam String status) {
+        try {
+            ProductStatus productStatus = ProductStatus.valueOf(status);
+            Product product = productService.findProductById(id);
+            product.setStatus(productStatus);
+            Product saved = productService.adminSaveProduct(product);
+            return ResponseEntity.ok(ApiResponse.ok(toProductResponseDTO(saved), "Product status updated successfully"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("Invalid status", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Internal Server Error", e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/products/{id}")
+    public ResponseEntity<ApiResponse<Void>> deleteProductByAdmin(@PathVariable long id) {
+        try {
+            productService.deleteProduct(id);
+            return ResponseEntity.ok(ApiResponse.ok(null, "Product deleted successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Internal Server Error", e.getMessage()));
+        }
+    }
+
+    // ========== Admin Inspector Report Management ==========
+
+    @GetMapping("/inspector-reports")
+    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getAllInspectorReportsForAdmin() {
+        try {
+            List<Map<String, Object>> reports = inspectorReportService.getAllInspectorReports().stream()
+                    .map(this::toReportResponse)
+                    .toList();
+            return ResponseEntity.ok(ApiResponse.ok(reports, "Inspector reports retrieved successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Internal Server Error", e.getMessage()));
+        }
+    }
+
+    @PatchMapping("/inspector-reports/{id}/status")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> updateReportStatusByAdmin(
+            @PathVariable Long id,
+            @RequestParam String status) {
+        try {
+            InspectorReportStatus reportStatus = InspectorReportStatus.valueOf(status);
+            InspectorReport report = inspectorReportService.getInspectorReportById(id);
+            report.setStatus(reportStatus);
+            InspectorReport saved = inspectorReportService.createInspectorReport(report);
+            return ResponseEntity.ok(ApiResponse.ok(toReportResponse(saved), "Report status updated successfully"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("Invalid status", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Internal Server Error", e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/inspector-reports/{id}")
+    public ResponseEntity<ApiResponse<Void>> deleteReportByAdmin(@PathVariable Long id) {
+        try {
+            inspectorReportService.deleteInspectorReport(id);
+            return ResponseEntity.ok(ApiResponse.ok(null, "Inspector report deleted successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Internal Server Error", e.getMessage()));
+        }
+    }
+
+    // ========== DTO Converters ==========
+
+    private Map<String, Object> toReportResponse(InspectorReport report) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("id", report.getId());
+        data.put("productId", report.getProduct() != null ? report.getProduct().getId() : null);
+        data.put("productTitle", report.getProduct() != null ? report.getProduct().getTitle() : null);
+        data.put("inspectorId", report.getInspectorId() != null ? report.getInspectorId().getId() : null);
+        data.put("inspectorName", report.getInspectorId() != null ? report.getInspectorId().getName() : null);
+        data.put("createdAt", report.getCreated_at());
+        data.put("status", report.getStatus() != null ? report.getStatus().name() : null);
+        data.put("scoreRating", report.getScore_rating());
+        data.put("reportDetails", report.getReport_details());
+        return data;
     }
 
     private BikeResponseDTO toBikeResponseDTO(Bike bike) {

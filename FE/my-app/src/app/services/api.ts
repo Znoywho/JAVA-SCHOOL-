@@ -1430,6 +1430,90 @@ export async function updateInspectorReport(reportId: number, payload: Partial<I
   return normalizeInspectorReport(data);
 }
 
+// ==================== Admin Product Management API ====================
+
+export interface AdminProduct {
+  id: number;
+  title: string;
+  price: number;
+  total: number;
+  conditionPercent: number;
+  status: string;
+  sellerId: number;
+  sellerName: string;
+  brandId: number;
+  brandName: string;
+  categoryId: number;
+  categoryName: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export async function fetchAdminProducts(): Promise<AdminProduct[]> {
+  return fetchWithFallback(
+    `${BASE_URL}/admin/products/all`,
+    () => ({ products: [] }),
+    (data) => {
+      const raw = data.products ?? [];
+      return raw.map((p: any) => ({
+        id: p.id ?? 0,
+        title: p.title ?? '',
+        price: p.price ?? 0,
+        total: p.total ?? 0,
+        conditionPercent: p.conditionPercent ?? 0,
+        status: p.status ?? 'DRAFT',
+        sellerId: p.sellerId ?? 0,
+        sellerName: p.sellerName ?? '',
+        brandId: p.brandId ?? 0,
+        brandName: p.brandName ?? '',
+        categoryId: p.categoryId ?? 0,
+        categoryName: p.categoryName ?? '',
+        createdAt: p.createdAt ?? new Date().toISOString(),
+        updatedAt: p.updatedAt ?? undefined,
+      }));
+    }
+  );
+}
+
+export async function updateAdminProductStatus(productId: number, status: string): Promise<AdminProduct> {
+  const response = await fetch(`${BASE_URL}/admin/products/${productId}/status?status=${encodeURIComponent(status)}`, {
+    method: 'PATCH',
+  });
+  return parseApiResponse<AdminProduct>(response, 'Cập nhật trạng thái sản phẩm thất bại');
+}
+
+export async function deleteAdminProduct(productId: number): Promise<void> {
+  const response = await fetch(`${BASE_URL}/admin/products/${productId}`, {
+    method: 'DELETE',
+  });
+  await parseApiResponse<void>(response, 'Xóa sản phẩm thất bại');
+}
+
+// ==================== Admin Inspector Report Management API ====================
+
+export async function fetchAdminInspectorReports(): Promise<InspectorReport[]> {
+  return fetchWithFallback(
+    `${BASE_URL}/admin/inspector-reports`,
+    () => MOCK_REPORTS,
+    (data) => Array.isArray(data) ? data.map(normalizeInspectorReport) : []
+  );
+}
+
+export async function updateAdminReportStatus(reportId: number, status: InspectorReportStatus): Promise<InspectorReport> {
+  const response = await fetch(`${BASE_URL}/admin/inspector-reports/${reportId}/status?status=${encodeURIComponent(status)}`, {
+    method: 'PATCH',
+  });
+  const data = await parseApiResponse<any>(response, 'Cập nhật trạng thái báo cáo thất bại');
+  return normalizeInspectorReport(data);
+}
+
+export async function deleteAdminReport(reportId: number): Promise<void> {
+  const response = await fetch(`${BASE_URL}/admin/inspector-reports/${reportId}`, {
+    method: 'DELETE',
+  });
+  await parseApiResponse<void>(response, 'Xóa báo cáo thất bại');
+}
+
 // ==================== Utilities ====================
 
 export function formatPrice(price: number): string {

@@ -79,4 +79,7 @@ public interface IProductService {
 
     /** Lấy sản phẩm theo khoảng giá */
     Page<Product> getProductsByPriceRange(double minPrice, double maxPrice, int page, int size);
+
+    /** Admin: Lưu sản phẩm (không cần kiểm tra seller) */
+    Product adminSaveProduct(Product product);
 }
