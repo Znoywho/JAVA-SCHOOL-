@@ -19,6 +19,7 @@ import { InspectorDashboard } from './components/InspectorDashboard';
 import { ShipperPortal } from './components/ShipperPortal';
 import { ChatPage } from './components/ChatPage';
 import { AdminPaymentsPage } from './components/AdminPaymentsPage';
+import { AdminDashboardPage } from './components/AdminDashboardPage';
 
 function HomePage() {
   return (
@@ -52,6 +53,9 @@ export default function App() {
         <Route path="/chat" element={<ChatPage />} />
         <Route path="/seller/dashboard" element={<SellerDashboard />} />
         <Route path="/inspector/dashboard" element={<InspectorDashboard />} />
+        <Route path="/admin" element={<Navigate to="/admin/users" replace />} />
+        <Route path="/admin/users" element={<AdminDashboardPage initialTab="users" />} />
+        <Route path="/admin/orders" element={<AdminDashboardPage initialTab="orders" />} />
         <Route path="/admin/payments" element={<AdminPaymentsPage />} />
         <Route path="/shipping/dashboard" element={<Navigate to="/shipper" replace />} />
         <Route path="/shipper" element={<ShipperPortal />} />

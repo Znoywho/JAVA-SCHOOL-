@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router';
-import { Search, Heart, ShoppingCart, ChevronDown, Package, LogOut, ClipboardList, MessageCircle, Truck, Banknote } from 'lucide-react';
+import { Search, Heart, ShoppingCart, ChevronDown, Package, LogOut, ClipboardList, MessageCircle, Truck, Banknote, Users, ShoppingBag } from 'lucide-react';
 import { getCurrentUser, logout, type AuthUser } from '../services/auth';
 import { fetchCartCount, fetchWishlistCount } from '../services/api';
 
@@ -82,14 +82,32 @@ function AuthSection() {
               </Link>
             )}
             {user.role === 'ADMIN' && (
-              <Link
-                to="/admin/payments"
-                onClick={() => setShowDropdown(false)}
-                className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 rounded-lg text-sm text-gray-700 transition-colors"
-              >
-                <Banknote size={16} />
-                Xác nhận chuyển khoản
-              </Link>
+              <>
+                <Link
+                  to="/admin/users"
+                  onClick={() => setShowDropdown(false)}
+                  className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 rounded-lg text-sm text-gray-700 transition-colors"
+                >
+                  <Users size={16} />
+                  Quản lý user
+                </Link>
+                <Link
+                  to="/admin/orders"
+                  onClick={() => setShowDropdown(false)}
+                  className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 rounded-lg text-sm text-gray-700 transition-colors"
+                >
+                  <ShoppingBag size={16} />
+                  Quản lý đơn hàng
+                </Link>
+                <Link
+                  to="/admin/payments"
+                  onClick={() => setShowDropdown(false)}
+                  className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 rounded-lg text-sm text-gray-700 transition-colors"
+                >
+                  <Banknote size={16} />
+                  Xác nhận chuyển khoản
+                </Link>
+              </>
             )}
             {(user.role === 'SHIPPER' || user.role === 'ADMIN') && (
               <Link

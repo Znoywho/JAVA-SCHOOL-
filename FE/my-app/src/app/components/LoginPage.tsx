@@ -25,6 +25,8 @@ export function LoginPage() {
         navigate('/shipper');
       } else if (user.role === 'INSPECTOR') {
         navigate('/inspector/dashboard');
+      } else if (user.role === 'ADMIN') {
+        navigate('/admin/users');
       } else {
         navigate('/');
       }

@@ -114,6 +114,25 @@ export interface WishlistItem {
   addedAt?: string;
 }
 
+export type AdminUserRole = 'BUYER' | 'SELLER' | 'INSPECTOR' | 'SHIPPER' | 'ADMIN';
+
+export interface AdminUser {
+  id: number;
+  name: string;
+  email: string;
+  phone?: string;
+  role: AdminUserRole;
+  createdAt?: string;
+}
+
+export interface AdminUserPayload {
+  name: string;
+  email: string;
+  phone?: string;
+  password?: string;
+  role: AdminUserRole;
+}
+
 export type PaymentMethod = 'COD' | 'BANK_TRANSFER' | 'CARD';
 
 export interface OrderDetailInput {
@@ -438,6 +457,17 @@ function normalizeChatConversation(raw: any): ChatConversation {
     lastMessage: raw.lastMessage ?? null,
     lastMessageSenderId: raw.lastMessageSenderId ?? null,
     messages: Array.isArray(raw.messages) ? raw.messages.map(normalizeChatMessage) : undefined,
+  };
+}
+
+function normalizeAdminUser(raw: any): AdminUser {
+  return {
+    id: raw.id ?? raw.Id ?? 0,
+    name: raw.name ?? raw.Name ?? '',
+    email: raw.email ?? raw.Email ?? '',
+    phone: raw.phone ?? raw.Phone ?? '',
+    role: (raw.role ?? raw.Role ?? 'BUYER') as AdminUserRole,
+    createdAt: raw.createdAt ?? raw.created_at ?? undefined,
   };
 }
 
@@ -1227,6 +1257,20 @@ export async function fetchAdminOrders(filters: {
   return parseApiResponse<OrderResponse[]>(response, 'Khong tai duoc danh sach don admin');
 }
 
+export async function updateAdminOrderStatus(orderId: number, status: string): Promise<OrderResponse> {
+  const response = await fetch(`${BASE_URL}/admin/orders/${orderId}/status?status=${encodeURIComponent(status)}`, {
+    method: 'PATCH',
+  });
+  return parseApiResponse<OrderResponse>(response, 'Cập nhật trạng thái đơn hàng thất bại');
+}
+
+export async function cancelAdminOrder(orderId: number): Promise<OrderResponse> {
+  const response = await fetch(`${BASE_URL}/admin/orders/${orderId}/cancel`, {
+    method: 'PATCH',
+  });
+  return parseApiResponse<OrderResponse>(response, 'Hủy đơn hàng thất bại');
+}
+
 export async function confirmBankTransfer(orderId: number, confirmedBy?: string): Promise<OrderResponse> {
   const params = new URLSearchParams();
   if (confirmedBy) params.set('confirmedBy', confirmedBy);
@@ -1285,6 +1329,45 @@ export async function confirmCodPayment(shipmentId: number, confirmedBy?: string
     method: 'PATCH',
   });
   return parseApiResponse<ShipmentResponse>(response, 'Xác nhận thanh toán COD thất bại');
+}
+
+// ==================== Admin User API ====================
+
+export async function fetchAdminUsers(role?: AdminUserRole | 'ALL'): Promise<AdminUser[]> {
+  const params = new URLSearchParams();
+  if (role && role !== 'ALL') params.set('role', role);
+
+  const query = params.toString();
+  const response = await fetch(`${BASE_URL}/admin/users${query ? `?${query}` : ''}`);
+  const data = await parseApiResponse<any[]>(response, 'Không tải được danh sách user');
+  return Array.isArray(data) ? data.map(normalizeAdminUser) : [];
+}
+
+export async function createAdminUser(payload: AdminUserPayload): Promise<AdminUser> {
+  const response = await fetch(`${BASE_URL}/admin/users`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  const data = await parseApiResponse<any>(response, 'Tạo user thất bại');
+  return normalizeAdminUser(data);
+}
+
+export async function updateAdminUser(userId: number, payload: AdminUserPayload): Promise<AdminUser> {
+  const response = await fetch(`${BASE_URL}/admin/users/${userId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  const data = await parseApiResponse<any>(response, 'Cập nhật user thất bại');
+  return normalizeAdminUser(data);
+}
+
+export async function deleteAdminUser(userId: number): Promise<void> {
+  const response = await fetch(`${BASE_URL}/admin/users/${userId}`, {
+    method: 'DELETE',
+  });
+  await parseApiResponse<void>(response, 'Xóa user thất bại');
 }
 
 // ==================== Inspector Reports API ====================

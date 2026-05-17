@@ -3,6 +3,7 @@ package com.bikemarket.controller;
 import com.bikemarket.dto.ApiResponse;
 import com.bikemarket.dto.OrderResponse;
 import com.bikemarket.enums.BillStatus;
+import com.bikemarket.enums.OrderStatus;
 import com.bikemarket.service.IOrderService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -41,6 +42,25 @@ public class AdminOrderController {
         return ResponseEntity.ok(ApiResponse.ok(
                 orderService.confirmBankTransfer(orderId, confirmedBy),
                 "Bank transfer confirmed successfully"
+        ));
+    }
+
+    @PatchMapping("/{orderId}/status")
+    public ResponseEntity<ApiResponse<OrderResponse>> updateStatus(
+            @PathVariable Long orderId,
+            @RequestParam OrderStatus status) {
+        return ResponseEntity.ok(ApiResponse.ok(
+                orderService.updateStatus(orderId, status),
+                "Order status updated successfully"
+        ));
+    }
+
+    @PatchMapping("/{orderId}/cancel")
+    public ResponseEntity<ApiResponse<OrderResponse>> cancelOrder(@PathVariable Long orderId) {
+        orderService.cancelOrder(orderId);
+        return ResponseEntity.ok(ApiResponse.ok(
+                orderService.getOrderById(orderId),
+                "Order cancelled successfully"
         ));
     }
 }

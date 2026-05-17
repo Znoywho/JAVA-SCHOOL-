@@ -1,2 +1,15 @@
-com\bikemarket\RebikeApplication.class
-com\bikemarket\config\CorsConfig.class
+com/bikemarket/dto/InspectorReportRequestDTO.class
+com/bikemarket/controller/AdminOrderController.class
+com/bikemarket/dto/ProductRatingStatsDTO.class
+com/bikemarket/service/ProductReviewService.class
+com/bikemarket/dto/ProductReviewDTO.class
+com/bikemarket/service/IProductReviewService.class
+com/bikemarket/controller/AdminUserController.class
+com/bikemarket/controller/ProductReviewController.class
+com/bikemarket/dto/ProductRatingStatsDTO$ProductRatingStatsDTOBuilder.class
+com/bikemarket/dto/CreateProductReviewDTO.class
+com/bikemarket/repository/IProductReviewRepository.class
+com/bikemarket/entity/ProductReview.class
+com/bikemarket/dto/AdminUserRequest.class
+com/bikemarket/dto/ProductReviewDTO$ProductReviewDTOBuilder.class
+com/bikemarket/dto/CreateProductReviewDTO$CreateProductReviewDTOBuilder.class
