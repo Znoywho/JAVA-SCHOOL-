@@ -8,6 +8,13 @@ export interface AuthUser {
   role: 'BUYER' | 'SELLER' | 'INSPECTOR' | 'SHIPPER' | 'ADMIN';
 }
 
+export interface BuyerRegisterPayload {
+  name: string;
+  email: string;
+  phone?: string;
+  password: string;
+}
+
 const STORAGE_KEY = 'rebike_user';
 
 /**
@@ -27,6 +34,31 @@ export async function login(email: string, password: string): Promise<AuthUser> 
   }
 
   const user: AuthUser = json.data;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+  window.dispatchEvent(new Event('auth-change'));
+  return user;
+}
+
+/**
+ * Register buyer account — calls POST /api/users/register
+ */
+export async function registerBuyer(payload: BuyerRegisterPayload): Promise<AuthUser> {
+  const response = await fetch(`${BASE_URL}/users/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+
+  const json = await response.json();
+
+  if (!response.ok || !json.success) {
+    throw new Error(json.error || json.message || 'Đăng ký thất bại');
+  }
+
+  const user: AuthUser = {
+    ...json.data,
+    phone: json.data.phone || '',
+  };
   localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
   window.dispatchEvent(new Event('auth-change'));
   return user;

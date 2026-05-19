@@ -1,6 +1,8 @@
 package com.bikemarket.service;
 
 import com.bikemarket.entity.User;
+import com.bikemarket.dto.BuyerRegisterRequest;
+import com.bikemarket.dto.UserDTO;
 import java.util.List;
 
 public interface IUserService {
@@ -10,4 +12,5 @@ public interface IUserService {
     public void deleteUser(User user);
     public void updateUser(User user);
     public List<User> getAllUsers();
+    public UserDTO registerBuyer(BuyerRegisterRequest request);
 }

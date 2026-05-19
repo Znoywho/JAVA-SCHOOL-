@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { Eye, EyeOff, Mail, Lock, AlertCircle, Bike } from 'lucide-react';
 import { login } from '../services/auth';
 
@@ -160,6 +160,13 @@ export function LoginPage() {
             ))}
           </div>
         </div>
+
+        <p className="text-center text-sm text-gray-500 mt-6">
+          Chưa có tài khoản buyer?{' '}
+          <Link to="/register" className="font-semibold text-blue-600 hover:text-blue-700">
+            Đăng ký ngay
+          </Link>
+        </p>
 
         <p className="text-center text-xs text-gray-400 mt-6">
           © 2025 REBIKE. Nền tảng mua bán xe đạp thể thao cũ.

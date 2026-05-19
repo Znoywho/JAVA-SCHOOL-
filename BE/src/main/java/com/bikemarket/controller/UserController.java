@@ -1,6 +1,8 @@
 package com.bikemarket.controller;
 
 import com.bikemarket.dto.ApiResponse;
+import com.bikemarket.dto.BuyerRegisterRequest;
+import com.bikemarket.dto.UserDTO;
 import com.bikemarket.entity.User;
 import com.bikemarket.exception.ResourceNotFoundException;
 import com.bikemarket.service.UserService;
@@ -19,6 +21,13 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @PostMapping("/register")
+    public ResponseEntity<ApiResponse<UserDTO>> registerBuyer(@RequestBody BuyerRegisterRequest request) {
+        UserDTO buyer = userService.registerBuyer(request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.ok(buyer, "Đăng ký tài khoản buyer thành công"));
+    }
 
     // ======= Login =======
     @PostMapping("/login")

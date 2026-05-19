@@ -1,6 +1,7 @@
 package com.bikemarket.service;
 
 import com.bikemarket.dto.AdminUserRequest;
+import com.bikemarket.dto.BuyerRegisterRequest;
 import com.bikemarket.dto.UserDTO;
 import com.bikemarket.entity.User;
 import com.bikemarket.enums.Role;
@@ -49,6 +50,26 @@ public class UserService implements IUserService {
   @Override
   public List<User> getAllUsers() {
     return userRepository.findAll();
+  }
+
+  @Override
+  public UserDTO registerBuyer(BuyerRegisterRequest request) {
+    validateBuyerRegisterRequest(request);
+
+    String email = request.getEmail().trim();
+    if (userRepository.findByEmail(email) != null) {
+      throw new IllegalArgumentException("Email đã tồn tại");
+    }
+
+    User buyer = new User(
+        request.getName().trim(),
+        email,
+        trimToEmpty(request.getPhone()),
+        request.getPassword(),
+        Role.BUYER
+    );
+
+    return mapToDTO(userRepository.save(buyer));
   }
 
   public List<UserDTO> getAdminUsers(Role role) {
@@ -121,6 +142,37 @@ public class UserService implements IUserService {
     }
     if (requirePassword && (request.getPassword() == null || request.getPassword().isBlank())) {
       throw new IllegalArgumentException("Mật khẩu không được để trống");
+    }
+  }
+
+  private void validateBuyerRegisterRequest(BuyerRegisterRequest request) {
+    if (request == null) {
+      throw new IllegalArgumentException("Thông tin đăng ký không được để trống");
+    }
+    if (request.getName() == null || request.getName().isBlank()) {
+      throw new IllegalArgumentException("Tên không được để trống");
+    }
+    if (request.getName().trim().length() > 100) {
+      throw new IllegalArgumentException("Tên không được vượt quá 100 ký tự");
+    }
+    if (request.getEmail() == null || request.getEmail().isBlank()) {
+      throw new IllegalArgumentException("Email không được để trống");
+    }
+    String email = request.getEmail().trim();
+    if (email.length() > 100) {
+      throw new IllegalArgumentException("Email không được vượt quá 100 ký tự");
+    }
+    if (!email.matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")) {
+      throw new IllegalArgumentException("Email không hợp lệ");
+    }
+    if (request.getPhone() != null && request.getPhone().trim().length() > 15) {
+      throw new IllegalArgumentException("Số điện thoại không được vượt quá 15 ký tự");
+    }
+    if (request.getPassword() == null || request.getPassword().isBlank()) {
+      throw new IllegalArgumentException("Mật khẩu không được để trống");
+    }
+    if (request.getPassword().length() < 6) {
+      throw new IllegalArgumentException("Mật khẩu phải có ít nhất 6 ký tự");
     }
   }
 

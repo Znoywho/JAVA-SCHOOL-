@@ -23,9 +23,14 @@ function AuthSection() {
 
   if (!user) {
     return (
-      <Link to="/login" className="ml-1 px-5 py-2.5 bg-gray-900 text-white rounded-xl hover:bg-gray-800 transition-colors text-sm font-semibold">
-        Đăng nhập
-      </Link>
+      <div className="ml-1 flex items-center gap-2">
+        <Link to="/register" className="hidden sm:inline-flex px-4 py-2.5 text-sm font-semibold text-gray-700 hover:text-blue-700 hover:bg-blue-50 rounded-xl transition-colors">
+          Đăng ký
+        </Link>
+        <Link to="/login" className="px-5 py-2.5 bg-gray-900 text-white rounded-xl hover:bg-gray-800 transition-colors text-sm font-semibold">
+          Đăng nhập
+        </Link>
+      </div>
     );
   }
 
