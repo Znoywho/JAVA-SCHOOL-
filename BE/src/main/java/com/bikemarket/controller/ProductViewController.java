@@ -3,6 +3,7 @@ package com.bikemarket.controller;
 import com.bikemarket.dto.ApiResponse;
 import com.bikemarket.dto.ProductMediaResponseDTO;
 import com.bikemarket.dto.ProductResponseDTO;
+import com.bikemarket.entity.Bike;
 import com.bikemarket.entity.Product;
 import com.bikemarket.entity.ProductMedia;
 import com.bikemarket.entity.InspectorReport;
@@ -64,9 +65,23 @@ public class ProductViewController {
             productData.put("conditionPercent", product.getConditionPercent());
             productData.put("status", product.getStatus().toString());
             productData.put("sellerId", product.getSellerId().getId());
+            productData.put("sellerName", product.getSellerId().getName());
+            productData.put("brandId", product.getBrand() != null ? product.getBrand().getId() : null);
             productData.put("brand", product.getBrand() != null ? product.getBrand().getName() : null);
+            productData.put("categoryId", product.getCategory() != null ? product.getCategory().getId() : null);
             productData.put("category", product.getCategory() != null ? product.getCategory().getName() : null);
             productData.put("createdAt", product.getCreated_at());
+            productData.put("updatedAt", product.getUpdated_at());
+            if (product instanceof Bike bike) {
+                productData.put("frameSize", bike.getFrameSize());
+                productData.put("wheelSize", bike.getWheelSize());
+                productData.put("isVerified", bike.getIsVerified());
+                productData.put("minRiderHeight", bike.getMinRiderHeight());
+                productData.put("maxRiderHeight", bike.getMaxRiderHeight());
+                productData.put("maxWeightCapacityKg", bike.getMaxWeightCapacityKg());
+                productData.put("weightKg", bike.getWeightKg());
+                productData.put("color", bike.getColor());
+            }
             productData.put("media", productService.getProductMedia(productId).stream()
                     .map(this::toMediaResponseDTO)
                     .toList());
